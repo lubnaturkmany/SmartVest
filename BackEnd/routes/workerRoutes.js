@@ -1,0 +1,1 @@
+console.log("luv u توتو");
