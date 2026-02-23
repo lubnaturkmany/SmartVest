@@ -1,5 +1,26 @@
-console.log("🔥 Smart Vest Backend is alive!");
-console.log("👩‍💻 Lubna was here!");
-console.log("🚀 Git test successful!");
-console.log("luv u lubna");
-console.log("hiiii");
+const connectDB = require("./configDB");
+const express = require("express");
+const app = express();
+
+// middleware
+app.use(express.json());
+
+//DB
+connectDB();
+
+// routes
+const sensorRoutes = require("./routes/sensorRoutes");
+const alertRoutes = require("./routes/alertRoutes");
+const workerRoutes = require("./routes/workerRoutes");
+app.use("/api", sensorRoutes);
+app.use("/api", alertRoutes);
+app.use("/api", workerRoutes);
+// test route
+app.get("/", (req, res) => {
+  res.send("Smart Vest API is running");
+});
+
+// start server
+app.listen(3000, () => {
+  console.log("Server running on port 3000");
+});
