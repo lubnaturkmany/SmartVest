@@ -3,9 +3,9 @@ const Worker = require("../models/worker");
 // إضافة عامل جديد
 const addWorker = async (req, res) => {
     try {
-        const { workerID ,firstName ,fatherName ,age ,jobTitle ,latitude ,longitude } = req.body;
+        const { workerID ,firstName ,lastName ,age ,jobTitle ,latitude ,longitude } = req.body;
 
-        if (!workerID || !firstName || !fatherName || !age || !jobTitle || !latitude || !longitude) {
+        if (!workerID || !firstName || !lastName || !age || !jobTitle || !latitude || !longitude) {
             return res.status(400).json({ error: "Missing worker info" });
         }
 
@@ -18,7 +18,7 @@ const addWorker = async (req, res) => {
         const newWorker = new Worker({ 
              workerID: workerID.trim(), 
             firstName, 
-            fatherName, 
+            lastName, 
             age, 
             jobTitle,
             location: {

@@ -14,7 +14,7 @@ workerID: {
     required: true
   },
   //اسم الاب 
-   fatherName: {
+   lastName: {
      type: String 
     },
     // العمر
