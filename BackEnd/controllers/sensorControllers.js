@@ -1,5 +1,5 @@
 const { checkAndCreateAlert } = require("./alertController");
-const { findWorkerByID } = require("./workerController");
+const { findWorkerByID } = require("./workerControllers");
 
 const receiveSensorData = (req, res) => {
     try {

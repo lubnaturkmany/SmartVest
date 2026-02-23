@@ -4,7 +4,7 @@ const {
     addWorker, 
     getAllWorkers, 
     getWorkerByID 
-      } = require("../controllers/workerController"); 
+      } = require("../controllers/workerControllers"); 
 // إضافة عامل 
 router.post("/workers", addWorker); 
 // عرض كل العمال 
