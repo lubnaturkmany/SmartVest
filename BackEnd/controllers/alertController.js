@@ -1,27 +1,31 @@
 const Alert = require("../models/alert");
 
 // تحديد الحالةالعامل وإنشاء التنبيه
-const checkAndCreateAlert = async ({ workerID, temperature, gasLevel, heartRate }) => {
-
+const checkAndCreateAlert = async ({ workerID, temperature, gasLevel, flameDetected , latitude , longitude }) => {
     let status = "Normal";
     let message = "";
 
     const isDanger =
+        flameDetected === true || 
         temperature > 39 ||
-        gasLevel > 500 ||
-        (heartRate !== undefined && heartRate > 130);
+        gasLevel > 500;
 
     const isWarning =
         (temperature >= 37.5 && temperature <= 39) ||
-        (gasLevel >= 300 && gasLevel <= 500) ||
-        (heartRate !== undefined && heartRate > 100 && heartRate <= 130);
+        (gasLevel >= 300 && gasLevel <= 500);
 
     if (isDanger) {
         status = "Danger";
-        message = "High risk detected! Immediate action required.";
+                if (flameDetected) {
+            message = "🔥 Flame detected! Immediate evacuation required.";
+        } else if (gasLevel > 500) {
+            message = "🚨 Dangerous gas level detected!";
+        } else {
+            message = "🌡 Extremely high temperature detected!";
+        }
     } else if (isWarning) {
         status = "Warning";
-        message = "Warning: Abnormal readings. Monitor worker.";
+        message = "⚠ Warning: Abnormal readings. Monitor worker.";
     }
 
     // نخزنه اذا كانت في حالة خطر او تحذير   
@@ -32,8 +36,12 @@ const checkAndCreateAlert = async ({ workerID, temperature, gasLevel, heartRate 
             message,
             temperature,
             gasLevel,
-            heartRate,
-            time: new Date()
+            flameDetected,
+            location: {
+                latitude,
+                longitude
+            },    
+            date: new Date()
         });
 
         await newAlert.save();

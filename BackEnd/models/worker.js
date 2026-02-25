@@ -22,11 +22,12 @@ workerID: {
     type: Number,
     required: true
   },
-   // المسمى الوظيفي
-  jobTitle: {              
-    type: String,
-    required: true
-  },
+   // مين الي يستقبل البيانات وايش هما
+role: {
+  type: String,
+  enum: ["Worker", "Supervisor", "Admin"],
+  required: true
+},
   // موقع العامل
   location: {
   type: {
@@ -43,18 +44,10 @@ workerID: {
   lastLocation: {           
     lat: Number,
     lng: Number
-  },
-  // وقت إضافة العامل
-  createdAt: {              
-    type: Date,
-    default: Date.now
-  },
-  // وقت آخر تحديث للموقع أو البيانات
-  updatedAt: {              
-    type: Date,
-    default: Date.now
   }
-});
+  },
+  { timestamps: true });
+
 workerSchema.index({ location: "2dsphere" });
 
 module.exports = mongoose.model("Worker", workerSchema);

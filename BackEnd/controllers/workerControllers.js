@@ -3,9 +3,18 @@ const Worker = require("../models/worker");
 // إضافة عامل جديد
 const addWorker = async (req, res) => {
     try {
-        const { workerID ,firstName ,lastName ,age ,jobTitle ,latitude ,longitude } = req.body;
+        const { workerID ,firstName ,lastName ,age , role ,latitude ,longitude } = req.body;
 
-        if (!workerID || !firstName || !lastName || !age || !jobTitle || !latitude || !longitude) {
+        // نحول الموقع لأرقام
+        const lat = Number(latitude);
+        const lng = Number(longitude);
+
+        // تحقق إنهم أرقام صحيحة
+        if (isNaN(lat) || isNaN(lng)) {
+        return res.status(400).json({ error: "Invalid coordinates" });
+    }
+        // نتأكد كل المعلومات موجودة
+        if (!workerID || !firstName || !lastName || !age || !role || latitude === undefined || !longitude) {
             return res.status(400).json({ error: "Missing worker info" });
         }
 
@@ -20,10 +29,10 @@ const addWorker = async (req, res) => {
             firstName, 
             lastName, 
             age, 
-            jobTitle,
+            role,
             location: {
                         type: "Point",
-                        coordinates: [longitude, latitude]
+                        coordinates: [lng, lat]
                       } 
         });
         await newWorker.save();

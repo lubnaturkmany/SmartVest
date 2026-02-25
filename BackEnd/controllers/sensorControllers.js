@@ -1,30 +1,51 @@
 const { checkAndCreateAlert } = require("./alertController");
 const { findWorkerByID } = require("./workerControllers");
+const Worker = require("../models/worker");
 
-const receiveSensorData = (req, res) => {
+const receiveSensorData = async (req, res) => {
     try {
-        const { workerID, temperature, gasLevel, heartRate } = req.body;
+        const { 
+                  workerID, 
+                  temperature, 
+                  gasLevel, 
+                  flameDetected,
+                  latitude,
+                  longitude 
+                } = req.body;
 
         // validation
-        if (!workerID || temperature === undefined || gasLevel === undefined) {
+        if (!workerID || temperature === undefined || gasLevel === undefined || flameDetected === undefined || latitude === undefined || longitude === undefined) {
             return res.status(400).json({
                 error: "Missing required sensor data"
             });
         }
         // التأكد أن العامل موجود
-        const worker = findWorkerByID(workerID);
+        const worker = await findWorkerByID(workerID);
               if (!worker) {
               return res.status(404).json({
               error: "Worker not found. Please register worker first."
             });
         }
 
+        // ✅ تحديث موقع العامل الحالي
+       await Worker.updateOne(
+        { workerID },
+        {
+           lastLocation: {
+           lat: Number(latitude),
+           lng: Number(longitude)
+              }
+          }
+        );
+
         //  alertController استدعاء منطق التنبيه من
         const result = checkAndCreateAlert({
             workerID,
             temperature,
             gasLevel,
-            heartRate
+            flameDetected,
+            latitude,
+            longitude
         });
 
         res.status(200).json({

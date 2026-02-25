@@ -1,12 +1,23 @@
 const mongoose = require("mongoose");
 
 const alertSchema = new mongoose.Schema({
-    workerID: String,
-    type: String,
+    workerID: {
+                 type: String,
+                 required: true
+    },  
+    type: {
+             type: String ,
+             enum: ["Normal", "Warning", "Danger"],
+             required:true
+    },
     message: String,
     temperature: Number,
     gasLevel: Number,
-    heartRate: Number,
+    flameDetected: Boolean,
+    location: {
+             latitude: Number,
+            longitude: Number
+    },
     date: {
         type: Date,
         default: Date.now
