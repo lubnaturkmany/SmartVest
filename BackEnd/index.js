@@ -15,6 +15,12 @@ const workerRoutes = require("./routes/workerRoutes");
 app.use("/api", sensorRoutes);
 app.use("/api", alertRoutes);
 app.use("/api", workerRoutes);
+const authRoutes = require("./routes/authRoutes");
+
+app.use("/api", sensorRoutes);
+app.use("/api", alertRoutes);
+app.use("/api", workerRoutes);
+app.use("/api", authRoutes);
 // test route
 app.get("/", (req, res) => {
   res.send("Smart Vest API is running");
