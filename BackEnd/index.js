@@ -9,6 +9,20 @@ app.use(express.json());
 //DB
 connectDB();
 
+const rateLimit = require("express-rate-limit");
+//  spam الحماية من 
+const sensorLimiter = rateLimit({
+  windowMs: 60 * 1000, // دقيقة
+  max: 100, // 100 request بالدقيقة
+  message: "Too many sensor requests. Try again later."
+});
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: "Too many login attempts. Try again later."
+});
+
 // routes
 const sensorRoutes = require("./routes/sensorRoutes");
 const alertRoutes = require("./routes/alertRoutes");
@@ -19,6 +33,8 @@ app.use("/api", sensorRoutes);
 app.use("/api", alertRoutes);
 app.use("/api", workerRoutes);
 app.use("/api", authRoutes);
+app.use("/api/sensor-data", sensorLimiter);
+app.use("/api/auth/login", authLimiter);
 // test route
 app.get("/", (req, res) => {
   res.send("Smart Vest API is running");
