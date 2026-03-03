@@ -62,9 +62,42 @@ const getAllWorkers = async (req, res) => {
 const getWorkerByID = async (req, res) => {
     try {
         const { workerID } = req.params;
+
+        // إذا المستخدم Worker نحصره بحاله فقط
+        if (req.user.role === "Worker" && req.user.workerID !== workerID) {
+            return res.status(403).json({ error: "Access denied" });
+        }
+
         const worker = await Worker.findOne({ workerID });
         if (!worker) return res.status(404).json({ error: "Worker not found" });
+
         res.json(worker);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+//  workerID حذف العامل حسب الـ 
+const deleteWorkerByID = async (req, res) => {
+    try {
+        const { workerID } = req.params;
+        const deletedWorker = await Worker.findOneAndDelete({ workerID });
+
+        if (!deletedWorker) {
+            return res.status(404).json({ error: "Worker not found" });
+        }
+
+        res.json({ message: "Worker deleted", worker: deletedWorker });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// حذف جميع العمال
+const deleteAllWorkers = async (req, res) => {
+    try {
+        const result = await Worker.deleteMany({});
+        res.json({ message: `Deleted ${result.deletedCount} workers` });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -74,5 +107,7 @@ module.exports = {
     addWorker,
     getAllWorkers,
     getWorkerByID,
-    findWorkerByID
+    findWorkerByID,
+    deleteWorkerByID,
+    deleteAllWorkers
 };
