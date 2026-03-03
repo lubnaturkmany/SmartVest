@@ -21,7 +21,12 @@ const alertSchema = new mongoose.Schema({
     date: {
         type: Date,
         default: Date.now
-    }
+    },
+    factory: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "Factory",
+  required: true
+}
 });
 
 module.exports = mongoose.model("Alert", alertSchema);

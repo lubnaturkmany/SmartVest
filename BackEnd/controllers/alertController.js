@@ -86,7 +86,8 @@ const checkAndCreateAlert = async ({
             location: {
               latitude: Number(latitude),
               longitude: Number(longitude)
-            }
+            },
+             factory: worker.factory
           });
 
           break; // ما نكمل على باقي المناطق
@@ -105,7 +106,7 @@ const checkAndCreateAlert = async ({
 // عرض كل التنبيهات
 const getAllAlerts = async (req, res) => {
     try {
-        const alerts = await Alert.find();
+        const alerts = await Alert.find({ factory: req.user.factory });
         res.status(200).json(alerts);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -123,7 +124,10 @@ const getAlertsByWorker = async (req, res) => {
       return res.status(403).json({ error: "Access denied" });
     }
 
-    const workerAlerts = await Alert.find({ workerID }).sort({ date: -1 });
+   const workerAlerts = await Alert.find({
+    workerID,
+    factory: req.user.factory 
+}).sort({ date: -1 });
 
     res.status(200).json(workerAlerts);
 
