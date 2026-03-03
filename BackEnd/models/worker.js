@@ -8,6 +8,11 @@ workerID: {
   unique: true,
   trim: true
 },
+  // تحديد نوع المصنع
+  factory: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "Factory"
+},
   // الاسم الاول
   firstName: {                  
     type: String,
@@ -51,4 +56,5 @@ role: {
 workerSchema.index({ location: "2dsphere" });
 
 module.exports = mongoose.model("Worker", workerSchema);
+
 
