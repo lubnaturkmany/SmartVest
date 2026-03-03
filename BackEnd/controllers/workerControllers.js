@@ -33,7 +33,8 @@ const addWorker = async (req, res) => {
             location: {
                         type: "Point",
                         coordinates: [lng, lat]
-                      } 
+                      }, 
+            factory: req.user.factory          
         });
         await newWorker.save();
 
@@ -51,7 +52,7 @@ const findWorkerByID = async (workerID) => {
 // عرض كل العمال
 const getAllWorkers = async (req, res) => {
     try {
-        const workers = await Worker.find();
+        const workers = await Worker.find({ factory: req.user.factory });
         res.json({ count: workers.length, workers });
     } catch (error) {
         res.status(500).json({ error: error.message });

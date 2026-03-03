@@ -1,6 +1,7 @@
 const { checkAndCreateAlert } = require("./alertController");
 const { findWorkerByID } = require("./workerControllers");
 const Worker = require("../models/worker");
+const Factory = require("../models/factory");
 
 const receiveSensorData = async (req, res) => {
     try {
@@ -29,7 +30,10 @@ const receiveSensorData = async (req, res) => {
               error: "Worker not found. Please register worker first."
             });
         }
-
+        if (worker.factory.toString() !== req.factory._id.toString()) {
+            return res.status(403).json({ error: "Worker does not belong to this factory" });
+        }
+        
         // ✅ تحديث موقع العامل الحالي
        await Worker.updateOne(
         { workerID },
@@ -40,6 +44,18 @@ const receiveSensorData = async (req, res) => {
               }
           }
         );
+
+// API Key للتحقق من  
+const verifyFactoryApiKey = async (req, res, next) => {
+  const apiKey = req.headers["x-api-key"];
+  if (!apiKey) return res.status(401).json({ error: "API Key required" });
+
+  const factory = await Factory.findOne({ apiKey });
+  if (!factory) return res.status(403).json({ error: "Invalid API Key" });
+
+  req.factory = factory; // ربط المصنع بالطلب
+  next();
+};
 
         //  alertController استدعاء منطق التنبيه من
         const result = checkAndCreateAlert({

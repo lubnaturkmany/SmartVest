@@ -28,13 +28,14 @@ const sensorRoutes = require("./routes/sensorRoutes");
 const alertRoutes = require("./routes/alertRoutes");
 const workerRoutes = require("./routes/workerRoutes");
 const authRoutes = require("./routes/authRoutes");
+const factoryRoutes = require("./routes/factoryRoutes");
 
-app.use("/api", sensorRoutes);
-app.use("/api", alertRoutes);
-app.use("/api", workerRoutes);
-app.use("/api", authRoutes);
-app.use("/api/sensor-data", sensorLimiter);
+app.use("/api/sensor-data", sensorLimiter, verifyFactoryApiKey, sensorRoutes);
 app.use("/api/auth/login", authLimiter);
+app.use("/api/alerts", alertRoutes);
+app.use("/api/workers", workerRoutes);
+app.use("/api/auth", authRoutes);
+
 // test route
 app.get("/", (req, res) => {
   res.send("Smart Vest API is running");
