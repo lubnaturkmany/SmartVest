@@ -10,7 +10,8 @@ const {
 } = require("../controllers/factoryController");
 
 // اول ادمن يسجل بالنظام
-router.post("/", protect, authorizeRoles("Admin"), createFactory);
+//router.post("/", protect, authorizeRoles("Admin"), createFactory);
+router.post("/", createFactory);
 
 // عرض كل المصانع → Admin فقط
 router.get("/", protect, authorizeRoles("Admin"), getAllFactories);

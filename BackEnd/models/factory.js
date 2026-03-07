@@ -15,7 +15,7 @@ const zoneSchema = new mongoose.Schema({
 const factorySchema = new mongoose.Schema({
   name: { type: String, required: true, unique: true },
   apiKey: { type: String, required: true, unique: true },
-  zones: [zoneSchema]
+  zones: { type: [zoneSchema], default: [] }
 }, { timestamps: true });
 
 // API Key توليد تلقائي عند الإنشاء

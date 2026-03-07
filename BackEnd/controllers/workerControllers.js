@@ -14,7 +14,7 @@ const addWorker = async (req, res) => {
         return res.status(400).json({ error: "Invalid coordinates" });
     }
         // نتأكد كل المعلومات موجودة
-        if (!workerID || !firstName || !lastName || !age || !role || latitude === undefined || !longitude) {
+        if (!workerID || !firstName || !lastName || !age || !role || latitude === undefined || !longitude === undefined) {
             return res.status(400).json({ error: "Missing worker info" });
         }
 
@@ -34,7 +34,7 @@ const addWorker = async (req, res) => {
                         type: "Point",
                         coordinates: [lng, lat]
                       }, 
-            factory: req.user.factory          
+            factory: req.body.factory || req.user.factory          
         });
         await newWorker.save();
 
@@ -69,7 +69,10 @@ const getWorkerByID = async (req, res) => {
             return res.status(403).json({ error: "Access denied" });
         }
 
-        const worker = await Worker.findOne({ workerID });
+        const worker = await Worker.findOne({
+            workerID,
+            factory: req.user.factory
+        });
         if (!worker) return res.status(404).json({ error: "Worker not found" });
 
         res.json(worker);
@@ -82,7 +85,10 @@ const getWorkerByID = async (req, res) => {
 const deleteWorkerByID = async (req, res) => {
     try {
         const { workerID } = req.params;
-        const deletedWorker = await Worker.findOneAndDelete({ workerID });
+        const deletedWorker = await Worker.findOneAndDelete({
+             workerID,
+             factory: req.user.factory
+            });
 
         if (!deletedWorker) {
             return res.status(404).json({ error: "Worker not found" });
@@ -97,7 +103,7 @@ const deleteWorkerByID = async (req, res) => {
 // حذف جميع العمال
 const deleteAllWorkers = async (req, res) => {
     try {
-        const result = await Worker.deleteMany({});
+        await Worker.deleteMany({ factory: req.user.factory });
         res.json({ message: `Deleted ${result.deletedCount} workers` });
     } catch (error) {
         res.status(500).json({ error: error.message });

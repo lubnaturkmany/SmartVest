@@ -31,11 +31,12 @@ const authRoutes = require("./routes/authRoutes");
 const factoryRoutes = require("./routes/factoryRoutes");
 const verifyApiKey = require("./middleware/apiKeyMiddleware");
 
-app.use("/api/sensor-data", sensorLimiter, verifyFactoryApiKey, sensorRoutes);
+app.use("/api/sensor-data", sensorLimiter, sensorRoutes);
 app.use("/api/auth/login", authLimiter);
 app.use("/api/alerts", alertRoutes);
 app.use("/api/workers", workerRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/factories", factoryRoutes);
 
 // test route
 app.get("/", (req, res) => {
