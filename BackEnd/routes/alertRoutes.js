@@ -8,14 +8,14 @@ const {
       }= require("../controllers/alertController"); 
 //GET api alerts 
 router.get(
-  "/alerts",
+  "/",
   protect,
   authorizeRoles("Admin", "Supervisor"),
   getAllAlerts
 );
 //GET api alerts workerID 
 router.get(
-  "/alerts/:workerID",
+  "/:workerID",
   protect,
   authorizeRoles("Admin", "Supervisor", "Worker"),
   getAlertsByWorker
