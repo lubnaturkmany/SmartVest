@@ -14,16 +14,8 @@ const zoneSchema = new mongoose.Schema({
 
 const factorySchema = new mongoose.Schema({
   name: { type: String, required: true, unique: true },
-  apiKey: { type: String, required: true, unique: true },
-  zones: { type: [zoneSchema], default: [] }
+  apiKey: { type: String, required: true, default: () => crypto.randomBytes(16).toString("hex") },
+  zones: { type: [zoneSchema], default: [] },
 }, { timestamps: true });
-
-// API Key توليد تلقائي عند الإنشاء
-factorySchema.pre("validate", function(next) {
-  if (!this.apiKey) {
-    this.apiKey = crypto.randomBytes(16).toString("hex"); // 32 char hex
-  }
-  next();
-});
 
 module.exports = mongoose.model("Factory", factorySchema);
