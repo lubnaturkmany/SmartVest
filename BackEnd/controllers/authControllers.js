@@ -5,7 +5,7 @@ const jwt = require("jsonwebtoken");
 // Register a new user
 const register = async (req, res) => {
   try {
-    const { username, email, password, role, workerID } = req.body;
+    const { username, email, password, role, workerID, factory } = req.body;
 
     // Validate required fields
     if (!username || !email || !password) {
@@ -28,6 +28,7 @@ const register = async (req, res) => {
       password: hashedPassword,
       role: role || "Worker",
       workerID: workerID || null,
+      factory: factory || null, // ✅ ADDED: store factory reference
     });
 
     await newUser.save();
@@ -59,9 +60,14 @@ const login = async (req, res) => {
       return res.status(401).json({ error: "Invalid credentials" });
     }
 
-    // Sign JWT
+    // ✅ FIXED: JWT now includes factory so req.user.factory works in all controllers
     const token = jwt.sign(
-      { id: user._id, role: user.role, workerID: user.workerID },
+      {
+        id: user._id,
+        role: user.role,
+        workerID: user.workerID,
+        factory: user.factory,  // ✅ ADDED
+      },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
@@ -75,6 +81,7 @@ const login = async (req, res) => {
         email: user.email,
         role: user.role,
         workerID: user.workerID,
+        factory: user.factory, // ✅ ADDED
       },
     });
   } catch (error) {

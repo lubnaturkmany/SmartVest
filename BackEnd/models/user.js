@@ -21,12 +21,18 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["Worker", "Supervisor", "Admin", "SystemAdmin"],
+      enum: ["Worker", "Supervisor", "Admin"],
       default: "Worker",
     },
     // Link to a worker profile if applicable
     workerID: {
       type: String,
+      default: null,
+    },
+    // ✅ ADDED: Link user to their factory (needed for all protected routes)
+    factory: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Factory",
       default: null,
     },
   },
