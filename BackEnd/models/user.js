@@ -29,6 +29,12 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    // ✅ ADDED: Link user to their factory (needed for all protected routes)
+    factory: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Factory",
+      default: null,
+    },
   },
   { timestamps: true }
 );
