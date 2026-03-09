@@ -1,5 +1,14 @@
 const Factory = require("../models/factory");
 
+// التحقق من القفل 
+const checkConfigured = (factory, user) => {
+  if (factory.isConfigured && user.role !== "SystemAdmin") {
+    const err = new Error("Factory configuration is locked");
+    err.status = 403;
+    throw err;
+  }
+};
+
 // إنشاء مصنع جديد
 const createFactory = async (req, res) => {
   try {
@@ -46,6 +55,10 @@ const addZone = async (req, res) => {
     const factory = await Factory.findById(factoryId);
     if (!factory) return res.status(404).json({ error: "Factory not found" });
 
+    // التحقق من القفل قبل أي تعديل
+    checkConfigured(factory, req.user);
+
+    // التحقق من صحة القيم 
     factory.zones.push({ zoneName, type, center, radius, threshold });
     await factory.save();
 
@@ -65,8 +78,22 @@ const updateZone = async (req, res) => {
     const factory = await Factory.findById(factoryId);
     if (!factory) return res.status(404).json({ error: "Factory not found" });
 
+    // التحقق من القفل قبل أي تعديل
+    checkConfigured(factory, req.user);
+
     const zone = factory.zones.id(zoneId);
     if (!zone) return res.status(404).json({ error: "Zone not found" });
+
+    // تحقق من صحة القيم قبل التعديل
+    if (type && !["gas", "temperature", "flame"].includes(type)) {
+      return res.status(400).json({ error: "Invalid zone type" });
+    }
+    if (radius !== undefined && radius <= 0) {
+      return res.status(400).json({ error: "Invalid radius" });
+    }
+    if (threshold !== undefined && threshold < 0) {
+      return res.status(400).json({ error: "Invalid threshold" });
+    }
 
     zone.zoneName = zoneName || zone.zoneName;
     zone.type = type || zone.type;
@@ -91,7 +118,13 @@ const deleteZone = async (req, res) => {
     const factory = await Factory.findById(factoryId);
     if (!factory) return res.status(404).json({ error: "Factory not found" });
 
-    factory.zones.id(zoneId).remove();
+    // التحقق من القفل قبل الحذف
+    checkConfigured(factory, req.user);
+
+    const zone = factory.zones.id(zoneId);
+    if (!zone) return res.status(404).json({ error: "Zone not found" });
+
+    zone.remove();
     await factory.save();
 
     res.status(200).json({ message: "Zone deleted", zones: factory.zones });

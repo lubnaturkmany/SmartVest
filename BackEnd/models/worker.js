@@ -28,10 +28,14 @@ factory: {
     type: Number,
     required: true
   },
+      //  قسم العامل 
+  zone: { 
+    type: mongoose.Schema.Types.ObjectId, ref: "Zone" 
+  },
    // مين الي يستقبل البيانات وايش هما
 role: {
   type: String,
-  enum: ["Worker", "Supervisor", "Admin"],
+  enum: ["Worker", "Supervisor", "Admin", "SystemAdmin"],
   required: true
 },
   // موقع العامل

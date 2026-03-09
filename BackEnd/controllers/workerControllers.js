@@ -3,7 +3,7 @@ const Worker = require("../models/worker");
 // إضافة عامل جديد
 const addWorker = async (req, res) => {
     try {
-        const { workerID ,firstName ,lastName ,age , role ,latitude ,longitude } = req.body;
+        const { workerID ,firstName ,lastName ,age , role, zone ,latitude ,longitude } = req.body;
 
         // نحول الموقع لأرقام
         const lat = Number(latitude);
@@ -34,7 +34,8 @@ const addWorker = async (req, res) => {
                         type: "Point",
                         coordinates: [lng, lat]
                       }, 
-            factory: req.user.factory          
+            factory: req.body.factory || req.user.factory,  
+            zone        
         });
         await newWorker.save();
 

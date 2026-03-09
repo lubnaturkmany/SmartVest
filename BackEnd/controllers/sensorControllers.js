@@ -5,6 +5,7 @@ const Factory = require("../models/factory");
 
 const receiveSensorData = async (req, res) => {
     try {
+        const factory = req.factory;
         const { 
                   workerID, 
                   temperature, 
