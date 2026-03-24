@@ -26,9 +26,9 @@ const register = async (req, res) => {
       username: username.trim(),
       email,
       password: hashedPassword,
-      role: role || "Worker",
+      role: role,
       workerID: workerID || null,
-      factory: factory || null, // ✅ ADDED: store factory reference
+      factory: req.user.factory, // ✅ ADDED: store factory reference
     });
 
     await newUser.save();

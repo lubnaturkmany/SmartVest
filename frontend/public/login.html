@@ -12,15 +12,15 @@
     />
     <style>
       :root {
-        --bg: #020b06;
-        --bg-elevated: #061810;
-        --border: rgba(255, 255, 255, 0.08);
-        --text: #e8f0eb;
-        --muted: #8fa99a;
-        --accent: #d4a574;
-        --accent-hover: #e4bc8f;
-        --accent-active: #c49460;
-        --danger: #e07a6e;
+        --bg: #0d1f33;
+        --bg-elevated: #142d4c;
+        --border: rgba(255, 255, 255, 0.1);
+        --text: #e0f0ff;
+        --muted: #a3c2e0;
+        --accent: #4dabf7;
+        --accent-hover: #76c1ff;
+        --accent-active: #3390e6;
+        --danger: #ff6b6b;
       }
 
       *,
@@ -65,12 +65,12 @@
         inset: 0;
         background: radial-gradient(
             ellipse 80% 50% at 20% 0%,
-            rgba(212, 165, 116, 0.06),
+            rgba(77, 171, 247, 0.06),
             transparent 55%
           ),
           radial-gradient(
             ellipse 60% 40% at 100% 100%,
-            rgba(46, 125, 90, 0.08),
+            rgba(118, 193, 255, 0.08),
             transparent 50%
           );
         pointer-events: none;
@@ -150,19 +150,19 @@
 
       input[type="email"]::placeholder,
       input[type="password"]::placeholder {
-        color: rgba(143, 169, 154, 0.55);
+        color: rgba(163, 194, 224, 0.55);
       }
 
       input[type="email"]:hover,
       input[type="password"]:hover {
-        border-color: rgba(255, 255, 255, 0.14);
-        background: #071c14;
+        border-color: rgba(118, 193, 255, 0.4);
+        background: #0f355a;
       }
 
       input[type="email"]:focus,
       input[type="password"]:focus {
-        border-color: rgba(212, 165, 116, 0.45);
-        box-shadow: 0 0 0 3px rgba(212, 165, 116, 0.12);
+        border-color: rgba(77, 171, 247, 0.8);
+        box-shadow: 0 0 0 3px rgba(77, 171, 247, 0.15);
       }
 
       .error-msg {
@@ -179,7 +179,7 @@
         font-family: inherit;
         font-size: 1rem;
         font-weight: 600;
-        color: #1a1208;
+        color: #ffffff;
         background: var(--accent);
         border: none;
         border-radius: 10px;
@@ -190,7 +190,7 @@
 
       .btn-signin:hover:not(:disabled) {
         background: var(--accent-hover);
-        box-shadow: 0 8px 24px rgba(212, 165, 116, 0.22);
+        box-shadow: 0 8px 24px rgba(77, 171, 247, 0.22);
         transform: translateY(-1px);
       }
 
@@ -204,34 +204,16 @@
         cursor: not-allowed;
       }
 
-      .footer-text {
-        margin-top: 2rem;
-        text-align: center;
-        font-size: 0.9375rem;
-        color: var(--muted);
-      }
-
-      .footer-text a {
-        color: var(--accent);
-        text-decoration: none;
-        font-weight: 600;
-        transition: color 0.2s ease;
-      }
-
-      .footer-text a:hover {
-        color: var(--accent-hover);
-      }
-
       .panel-right {
         flex: 0 0 45%;
         max-width: 45%;
         position: relative;
         min-height: 320px;
-        background-color: #0a1610;
+        background-color: #142d4c;
         background-image: url("./robot.png");
         background-position: right center;
         background-repeat: no-repeat;
-        background-size: 82%;
+        background-size: 99%;
       }
 
       .panel-right::after {
@@ -272,7 +254,7 @@
             <span class="brand-icon" aria-hidden="true">🦺</span>
             <span class="brand-name">SmartVest</span>
           </div>
-          <h1>Welcome to the Safety System</h1>
+          <h1>Welcome Back!</h1>
           <p class="subtitle">Monitor your workers and stay updated</p>
 
           <form id="login-form" novalidate>
@@ -303,11 +285,6 @@
               Log in
             </button>
           </form>
-
-          <p class="footer-text">
-            Don’t have an account?
-            <a href="#">Sign Up</a>
-          </p>
         </div>
       </section>
 

@@ -4,7 +4,7 @@ const { register, login, getMe } = require("../controllers/authControllers");
 const { protect } = require("../middleware/authMiddleware");
 
 // POST /api/auth/register
-router.post("/register", register);
+router.post("/register",protect,authorizeRoles("ADMIN"),register);
 
 // POST /api/auth/login
 router.post("/login", login);

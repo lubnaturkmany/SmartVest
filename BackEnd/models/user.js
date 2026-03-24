@@ -21,8 +21,8 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["Worker", "Supervisor", "Admin", "SystemAdmin"],
-      default: "Worker",
+      enum: ["ADMIN", "HR", "SECURITY", "SAFETY"],
+      required: true,
     },
     // Link to a worker profile if applicable
     workerID: {
@@ -33,6 +33,15 @@ const userSchema = new mongoose.Schema(
     factory: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Factory",
+      default: null,
+    },
+    // User model snippet
+    verificationToken: {
+      type: String,
+      default: null,
+    },
+    verificationTokenExpires: {
+      type: Date,
       default: null,
     },
   },

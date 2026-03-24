@@ -10,15 +10,15 @@ const {
 } = require("../controllers/factoryController");
 
 // اول ادمن يسجل بالنظام
-router.post("/", protect, authorizeRoles("Admin"), createFactory);
+router.post("/", protect, authorizeRoles("ADMIN"), createFactory);
 //router.post("/", createFactory);
 
 // عرض كل المصانع → Admin فقط
-router.get("/", protect, authorizeRoles("Admin"), getAllFactories);
+router.get("/", protect, authorizeRoles("ADMIN"), getAllFactories);
 
 // Zones إدارة 
-router.post("/:factoryId/zones", protect, authorizeRoles("SystemAdmin"), addZone);
-router.put("/:factoryId/zones/:zoneId", protect, authorizeRoles("SystemAdmin"), updateZone);
-router.delete("/:factoryId/zones/:zoneId", protect, authorizeRoles("SystemAdmin"), deleteZone);
+router.post("/:factoryId/zones", protect, authorizeRoles("ADMIN", "SAFETY"), addZone);
+router.put("/:factoryId/zones/:zoneId", protect, authorizeRoles("ADMIN", "SAFETY"), updateZone);
+router.delete("/:factoryId/zones/:zoneId", protect, authorizeRoles("ADMIN", "SAFETY"), deleteZone);
 
 module.exports = router;
