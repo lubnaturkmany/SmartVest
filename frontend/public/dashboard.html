@@ -1,0 +1,1705 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SmartVest Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #020b06;
+        --bg-2: #071410;
+        --bg-3: #0c2118;
+        --panel: rgba(255, 255, 255, 0.03);
+        --border: rgba(255, 255, 255, 0.1);
+        --border-2: rgba(255, 255, 255, 0.14);
+        --text: #e8f0eb;
+        --muted: rgba(232, 240, 235, 0.72);
+        --muted-2: rgba(232, 240, 235, 0.55);
+        --accent: #d4a574;
+        --accent-hover: #e4bc8f;
+        --danger: #e07a6e;
+        --ok: #66d17e;
+        --radius: 14px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        margin: 0;
+        font-family: "Outfit", system-ui, -apple-system, sans-serif;
+        background: radial-gradient(1200px 600px at 20% 0%, #0b2a1e 0%, transparent 60%),
+          radial-gradient(900px 520px at 100% 30%, #0a3a26 0%, transparent 55%),
+          linear-gradient(180deg, var(--bg), var(--bg-2));
+        color: var(--text);
+      }
+
+      .app {
+        display: flex;
+        min-height: 100vh;
+      }
+
+      .sidebar {
+        width: 290px;
+        flex: 0 0 290px;
+        padding: 18px;
+        border-right: 1px solid var(--border);
+        background: linear-gradient(180deg, rgba(2, 11, 6, 0.8), rgba(7, 20, 16, 0.8));
+        overflow: auto;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+      .brand-logo {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        background: rgba(212, 165, 116, 0.12);
+        border: 1px solid rgba(212, 165, 116, 0.25);
+        display: grid;
+        place-items: center;
+        font-size: 18px;
+      }
+      .brand-title {
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        font-size: 16px;
+      }
+      .brand-subtitle {
+        font-size: 12px;
+        color: var(--muted-2);
+        margin-top: 2px;
+      }
+
+      .section-title {
+        font-size: 12px;
+        color: var(--muted-2);
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        margin: 18px 0 10px;
+      }
+
+      .factories {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .factory-item {
+        width: 100%;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.02);
+        padding: 10px;
+        cursor: pointer;
+        color: var(--muted);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+      }
+      .factory-item:hover {
+        transform: translateY(-1px);
+        border-color: var(--border-2);
+        background: rgba(255, 255, 255, 0.04);
+      }
+      .factory-item.active {
+        border-color: rgba(212, 165, 116, 0.35);
+        background: rgba(212, 165, 116, 0.12);
+        color: var(--text);
+      }
+      .factory-name {
+        font-weight: 600;
+        font-size: 13px;
+        max-width: 170px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .pill {
+        font-size: 11px;
+        padding: 4px 8px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.02);
+        color: rgba(255, 255, 255, 0.75);
+      }
+
+      .nav {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 14px;
+      }
+      .nav-item {
+        width: 100%;
+        border-radius: 12px;
+        border: 1px solid transparent;
+        background: rgba(255, 255, 255, 0.02);
+        color: var(--muted);
+        padding: 11px 12px;
+        cursor: pointer;
+        transition: background 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+      }
+      .nav-item:hover {
+        transform: translateY(-1px);
+        background: rgba(255, 255, 255, 0.04);
+        border-color: var(--border);
+      }
+      .nav-item.active {
+        background: rgba(212, 165, 116, 0.12);
+        border-color: rgba(212, 165, 116, 0.35);
+        color: var(--text);
+      }
+      .nav-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .nav-icon {
+        width: 26px;
+        height: 26px;
+        border-radius: 10px;
+        display: grid;
+        place-items: center;
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+      .nav-text {
+        font-weight: 600;
+        font-size: 13px;
+      }
+
+      .main {
+        flex: 1;
+        padding: 22px;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        margin-bottom: 18px;
+      }
+      .page-title {
+        font-size: 18px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+      }
+      .page-subtitle {
+        font-size: 13px;
+        color: var(--muted-2);
+        margin-top: 6px;
+      }
+
+      .actions-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .btn {
+        border: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.02);
+        color: var(--text);
+        padding: 10px 12px;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: background 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
+        font-weight: 600;
+        font-size: 13px;
+      }
+      .btn:hover {
+        background: rgba(255, 255, 255, 0.04);
+        transform: translateY(-1px);
+        border-color: var(--border-2);
+      }
+      .btn.primary {
+        border-color: rgba(212, 165, 116, 0.35);
+        background: rgba(212, 165, 116, 0.13);
+      }
+      .btn.danger {
+        border-color: rgba(224, 122, 110, 0.4);
+        background: rgba(224, 122, 110, 0.12);
+      }
+
+      .grid-kpis {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+      .card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 14px;
+      }
+      .kpi-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+      .kpi-title {
+        color: var(--muted-2);
+        font-size: 12px;
+        font-weight: 600;
+      }
+      .kpi-value {
+        font-size: 26px;
+        font-weight: 850;
+        letter-spacing: -0.03em;
+        margin-top: 2px;
+      }
+      .kpi-hint {
+        color: var(--muted);
+        font-size: 13px;
+        margin-top: 2px;
+      }
+
+      .content-row {
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr;
+        gap: 12px;
+      }
+
+      .panel {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 14px;
+      }
+      .panel-title {
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        font-size: 14px;
+      }
+      .panel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 12px;
+      }
+
+      .filters {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+
+      .input {
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.02);
+        color: var(--text);
+        padding: 10px 12px;
+        font-family: inherit;
+        outline: none;
+        transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
+        font-size: 13px;
+      }
+      .input::placeholder {
+        color: rgba(232, 240, 235, 0.35);
+      }
+      .input:focus {
+        border-color: rgba(212, 165, 116, 0.42);
+        background: rgba(255, 255, 255, 0.03);
+        transform: translateY(-1px);
+      }
+      .select {
+        appearance: none;
+        background-image: linear-gradient(45deg, transparent 50%, rgba(232, 240, 235, 0.65) 50%),
+          linear-gradient(135deg, rgba(232, 240, 235, 0.65) 50%, transparent 50%);
+        background-position: calc(100% - 18px) calc(1em + 2px), calc(100% - 13px) calc(1em + 2px);
+        background-size: 5px 5px, 5px 5px;
+        background-repeat: no-repeat;
+      }
+
+      .table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      .table th,
+      .table td {
+        text-align: left;
+        padding: 10px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        vertical-align: top;
+      }
+      .table th {
+        font-size: 12px;
+        color: var(--muted-2);
+        font-weight: 700;
+      }
+      .table td {
+        font-size: 13px;
+        color: rgba(232, 240, 235, 0.88);
+      }
+      .nowrap {
+        white-space: nowrap;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 800;
+        border: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.02);
+      }
+      .badge.ok {
+        border-color: rgba(102, 209, 126, 0.42);
+        background: rgba(102, 209, 126, 0.1);
+      }
+      .badge.danger {
+        border-color: rgba(224, 122, 110, 0.45);
+        background: rgba(224, 122, 110, 0.12);
+      }
+      .badge.warning {
+        border-color: rgba(212, 165, 116, 0.42);
+        background: rgba(212, 165, 116, 0.12);
+      }
+
+      .empty-state {
+        padding: 18px;
+        border-radius: var(--radius);
+        border: 1px dashed rgba(255, 255, 255, 0.14);
+        background: rgba(255, 255, 255, 0.02);
+        color: var(--muted);
+        text-align: center;
+        font-weight: 600;
+      }
+
+      .page {
+        display: none;
+      }
+      .page.active {
+        display: block;
+      }
+
+      .help-text {
+        font-size: 12px;
+        color: var(--muted-2);
+        margin-top: 6px;
+        line-height: 1.45;
+      }
+
+      .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.55);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 18px;
+        z-index: 50;
+      }
+      .modal-overlay.show {
+        display: flex;
+      }
+      .modal {
+        width: min(760px, 100%);
+        background: linear-gradient(180deg, rgba(7, 20, 16, 0.95), rgba(2, 11, 6, 0.95));
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+        padding: 16px;
+      }
+      .modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+      .modal-title {
+        font-weight: 900;
+        letter-spacing: -0.02em;
+        font-size: 15px;
+      }
+      .modal-close {
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.02);
+        color: var(--text);
+        cursor: pointer;
+        padding: 8px 10px;
+        font-weight: 700;
+      }
+      .modal-body {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+      }
+      .field label {
+        font-size: 12px;
+        color: var(--muted-2);
+        font-weight: 800;
+      }
+      .modal-footer {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        justify-content: flex-end;
+        margin-top: 14px;
+      }
+
+      .toast-container {
+        position: fixed;
+        right: 18px;
+        bottom: 18px;
+        z-index: 80;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        pointer-events: none;
+      }
+      .toast {
+        pointer-events: none;
+        min-width: 260px;
+        max-width: 420px;
+        border-radius: 14px;
+        border: 1px solid var(--border);
+        background: rgba(2, 11, 6, 0.9);
+        box-shadow: rgba(0, 0, 0, 0.25) 0 10px 40px;
+        padding: 12px;
+        display: grid;
+        grid-template-columns: 28px 1fr;
+        gap: 10px;
+        align-items: start;
+      }
+      .toast .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        margin-top: 6px;
+        background: rgba(255, 255, 255, 0.35);
+      }
+      .toast.success .dot {
+        background: rgba(102, 209, 126, 0.9);
+      }
+      .toast.error .dot {
+        background: rgba(224, 122, 110, 0.95);
+      }
+      .toast.info .dot {
+        background: rgba(212, 165, 116, 0.95);
+      }
+      .toast .title {
+        font-weight: 900;
+        font-size: 13px;
+        margin-bottom: 2px;
+      }
+      .toast .message {
+        font-size: 13px;
+        color: rgba(232, 240, 235, 0.85);
+      }
+
+      @media (max-width: 900px) {
+        .grid-kpis {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        .content-row {
+          grid-template-columns: 1fr;
+        }
+        .sidebar {
+          width: 240px;
+          flex: 0 0 240px;
+        }
+      }
+      @media (max-width: 760px) {
+        .app {
+          flex-direction: column;
+        }
+        .sidebar {
+          width: 100%;
+          flex: 1 1 auto;
+          height: auto;
+        }
+        .modal-body {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sidebar" aria-label="Sidebar">
+        <div class="brand">
+          <div class="brand-logo" aria-hidden="true">🦺</div>
+          <div>
+            <div class="brand-title">SmartVest</div>
+            <div class="brand-subtitle">Safety System</div>
+          </div>
+        </div>
+
+        <div class="section-title">Factories</div>
+        <button class="btn primary" id="btn-open-add-factory" type="button" style="width: 100%; margin-bottom: 10px; display: none">
+          Add Factory
+        </button>
+        <div id="factories" class="factories"></div>
+
+        <div class="section-title">Navigation</div>
+        <div class="nav">
+          <button class="nav-item" data-page="dashboard" id="nav-dashboard" type="button">
+            <span class="nav-left">
+              <span class="nav-icon" aria-hidden="true">📊</span>
+              <span class="nav-text">Dashboard</span>
+            </span>
+            <span class="pill">Live</span>
+          </button>
+          <button class="nav-item" data-page="workers" id="nav-workers" type="button">
+            <span class="nav-left">
+              <span class="nav-icon" aria-hidden="true">👷</span>
+              <span class="nav-text">Workers</span>
+            </span>
+            <span class="pill">Table</span>
+          </button>
+          <button class="nav-item" data-page="alerts" id="nav-alerts" type="button">
+            <span class="nav-left">
+              <span class="nav-icon" aria-hidden="true">🚨</span>
+              <span class="nav-text">Alerts</span>
+            </span>
+            <span class="pill">Log</span>
+          </button>
+          <button class="nav-item" data-page="sensor" id="nav-sensor" type="button">
+            <span class="nav-left">
+              <span class="nav-icon" aria-hidden="true">📡</span>
+              <span class="nav-text">Sensor Feed</span>
+            </span>
+            <span class="pill">POST</span>
+          </button>
+          <button class="nav-item" data-page="factories-zones" id="nav-factories-zones" type="button">
+            <span class="nav-left">
+              <span class="nav-icon" aria-hidden="true">🧭</span>
+              <span class="nav-text">Factories & Zones</span>
+            </span>
+            <span class="pill">Manage</span>
+          </button>
+        </div>
+      </aside>
+
+      <main class="main">
+        <div class="topbar">
+          <div>
+            <div class="page-title" id="page-title">Dashboard</div>
+            <div class="page-subtitle" id="page-subtitle">Loading...</div>
+          </div>
+          <div class="actions-row">
+            <button class="btn" type="button" id="btn-refresh">Refresh</button>
+            <button class="btn primary" type="button" id="btn-logout">Log out</button>
+          </div>
+        </div>
+
+        <!-- Dashboard -->
+        <section class="page" data-page="dashboard" id="page-dashboard">
+          <div class="grid-kpis">
+            <div class="card">
+              <div class="kpi-top">
+                <div class="kpi-title">Total Workers</div>
+                <span class="badge ok">OK</span>
+              </div>
+              <div class="kpi-value" id="kpi-workers">0</div>
+              <div class="kpi-hint" id="kpi-workers-hint">-</div>
+            </div>
+            <div class="card">
+              <div class="kpi-top">
+                <div class="kpi-title">Danger Alerts</div>
+                <span class="badge danger">Danger</span>
+              </div>
+              <div class="kpi-value" id="kpi-danger">0</div>
+              <div class="kpi-hint" id="kpi-danger-hint">-</div>
+            </div>
+            <div class="card">
+              <div class="kpi-top">
+                <div class="kpi-title">Normal Alerts</div>
+                <span class="badge ok">Normal</span>
+              </div>
+              <div class="kpi-value" id="kpi-normal">0</div>
+              <div class="kpi-hint" id="kpi-normal-hint">-</div>
+            </div>
+            <div class="card">
+              <div class="kpi-top">
+                <div class="kpi-title">Last Alert</div>
+                <span class="badge warning">Time</span>
+              </div>
+              <div class="kpi-value" id="kpi-last">-</div>
+              <div class="kpi-hint">Most recent event</div>
+            </div>
+          </div>
+
+          <div class="content-row">
+            <div class="panel">
+              <div class="panel-header">
+                <div class="panel-title">Recent Alerts</div>
+                <div class="filters">
+                  <button class="btn" type="button" id="btn-alerts-top">Top 10</button>
+                </div>
+              </div>
+              <div id="alerts-list"></div>
+            </div>
+            <div class="panel">
+              <div class="panel-title">Factory Context</div>
+              <div class="help-text" id="factory-context" style="margin-top: 10px">-</div>
+              <div class="help-text">
+                Worker and alert endpoints are scoped by your authenticated user's factory.
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Workers -->
+        <section class="page" data-page="workers" id="page-workers">
+          <div class="panel" style="margin-bottom: 12px">
+            <div class="panel-header">
+              <div class="panel-title">Workers</div>
+              <div class="filters">
+                <input id="workers-search" class="input" type="text" placeholder="Search by worker ID or name..." />
+                <button class="btn primary" type="button" id="btn-add-worker">Add Worker</button>
+              </div>
+            </div>
+            <div id="workers-table-wrap"></div>
+          </div>
+        </section>
+
+        <!-- Alerts -->
+        <section class="page" data-page="alerts" id="page-alerts">
+          <div class="panel" style="margin-bottom: 12px">
+            <div class="panel-header">
+              <div class="panel-title">Alerts</div>
+              <div class="filters">
+                <select id="alerts-type-filter" class="input select" style="min-width: 180px">
+                  <option value="All">All types</option>
+                  <option value="Normal">Normal</option>
+                  <option value="Warning">Warning</option>
+                  <option value="Danger">Danger</option>
+                </select>
+                <input id="alerts-search" class="input" type="text" placeholder="Search by workerID or message..." />
+              </div>
+            </div>
+            <div id="alerts-table-wrap"></div>
+          </div>
+        </section>
+
+        <!-- Sensor Feed -->
+        <section class="page" data-page="sensor" id="page-sensor">
+          <div class="panel" style="margin-bottom: 12px">
+            <div class="panel-header">
+              <div class="panel-title">Sensor Feed (POST)</div>
+              <div class="filters">
+                <button class="btn" type="button" id="btn-send-sample">Send sample</button>
+              </div>
+            </div>
+            <div class="modal-body" style="grid-template-columns: repeat(2, minmax(0, 1fr))">
+              <div class="field">
+                <label for="sensor-api-key">x-api-key</label>
+                <input id="sensor-api-key" class="input" type="text" placeholder="Factory API key" />
+              </div>
+              <div class="field">
+                <label for="sensor-worker-id">workerID</label>
+                <input id="sensor-worker-id" class="input" type="text" placeholder="e.g. W-1001" />
+              </div>
+              <div class="field">
+                <label for="sensor-temperature">temperature</label>
+                <input id="sensor-temperature" class="input" type="number" step="0.1" placeholder="e.g. 55.2" />
+              </div>
+              <div class="field">
+                <label for="sensor-gas-level">gasLevel</label>
+                <input id="sensor-gas-level" class="input" type="number" step="0.1" placeholder="e.g. 3.1" />
+              </div>
+              <div class="field">
+                <label for="sensor-flame">flameDetected</label>
+                <select id="sensor-flame" class="input select">
+                  <option value="true">true</option>
+                  <option value="false">false</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="sensor-lat">latitude</label>
+                <input id="sensor-lat" class="input" type="number" step="0.000001" placeholder="e.g. 24.7136" />
+              </div>
+              <div class="field">
+                <label for="sensor-lng">longitude</label>
+                <input id="sensor-lng" class="input" type="number" step="0.000001" placeholder="e.g. 46.6753" />
+              </div>
+              <div class="field">
+                <label>&nbsp;</label>
+                <button class="btn primary" type="button" id="btn-send-sensor">Send sensor data</button>
+              </div>
+            </div>
+            <div id="sensor-response" class="help-text" style="margin-top: 12px">-</div>
+          </div>
+        </section>
+
+        <!-- Factories & Zones -->
+        <section class="page" data-page="factories-zones" id="page-factories-zones">
+          <div class="panel" style="margin-bottom: 12px">
+            <div class="panel-header">
+              <div class="panel-title">Factories & Zones</div>
+              <div class="filters">
+                <button class="btn primary" type="button" id="btn-add-zone" style="display: none">Add Zone</button>
+              </div>
+            </div>
+            <div id="factories-zones-wrap"></div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <!-- Add Factory Modal -->
+    <div class="modal-overlay" id="factory-modal-overlay" aria-hidden="true">
+      <div class="modal" role="dialog" aria-modal="true" aria-label="Add Factory">
+        <div class="modal-header">
+          <div class="modal-title">Add Factory</div>
+          <button class="modal-close" id="factory-modal-close" type="button">Close</button>
+        </div>
+
+        <div class="modal-body" style="grid-template-columns: 1fr">
+          <div class="field">
+            <label for="factory-name-input">Factory name</label>
+            <input id="factory-name-input" class="input" type="text" placeholder="Enter factory name" />
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn" type="button" id="factory-modal-cancel">Cancel</button>
+          <button class="btn primary" type="button" id="factory-modal-submit">Create Factory</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Worker Modal -->
+    <div class="modal-overlay" id="worker-modal-overlay" aria-hidden="true">
+      <div class="modal" role="dialog" aria-modal="true" aria-label="Add Worker">
+        <div class="modal-header">
+          <div class="modal-title">Add Worker</div>
+          <button class="modal-close" id="worker-modal-close" type="button">Close</button>
+        </div>
+
+        <div class="modal-body">
+          <div class="field">
+            <label for="w-workerID">workerID</label>
+            <input id="w-workerID" class="input" type="text" placeholder="e.g. W-1001" />
+          </div>
+          <div class="field">
+            <label for="w-role">role</label>
+            <select id="w-role" class="input select">
+              <option value="Worker">Worker</option>
+              <option value="Supervisor">Supervisor</option>
+              <option value="Admin">Admin</option>
+              <option value="SystemAdmin">SystemAdmin</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="w-firstName">firstName</label>
+            <input id="w-firstName" class="input" type="text" placeholder="First name" />
+          </div>
+          <div class="field">
+            <label for="w-lastName">lastName</label>
+            <input id="w-lastName" class="input" type="text" placeholder="Last name" />
+          </div>
+          <div class="field">
+            <label for="w-age">age</label>
+            <input id="w-age" class="input" type="number" step="1" placeholder="e.g. 28" />
+          </div>
+          <div class="field">
+            <label for="w-lat">latitude</label>
+            <input id="w-lat" class="input" type="number" step="0.000001" placeholder="e.g. 24.7136" />
+          </div>
+          <div class="field">
+            <label for="w-lng">longitude</label>
+            <input id="w-lng" class="input" type="number" step="0.000001" placeholder="e.g. 46.6753" />
+          </div>
+          <div class="field">
+            <label>&nbsp;</label>
+            <div class="help-text">Backend requires: workerID, firstName, lastName, age, role, latitude, longitude.</div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn" type="button" id="worker-modal-cancel">Cancel</button>
+          <button class="btn primary" type="button" id="worker-modal-submit">Add</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast-container" id="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+    <script>
+      (function () {
+        const API_BASE = "http://localhost:3000";
+
+        const token = localStorage.getItem("sv_token");
+        let user = null;
+        try {
+          user = JSON.parse(localStorage.getItem("sv_user") || "null");
+        } catch {
+          user = null;
+        }
+
+        const role = user?.role;
+        const userFactoryId = user?.factory;
+
+        if (!token) {
+          window.location.href = "index.html";
+          return;
+        }
+
+        const isAdmin = role === "Admin";
+        const isSupervisor = role === "Supervisor";
+        const isSystemAdmin = role === "SystemAdmin";
+        const isWorkerRole = role === "Worker";
+
+        const elFactories = document.getElementById("factories");
+        const elPageTitle = document.getElementById("page-title");
+        const elPageSubtitle = document.getElementById("page-subtitle");
+        const toastContainer = document.getElementById("toast-container");
+
+        const state = {
+          factories: [],
+          selectedFactoryId: null,
+          caches: { workersByFactoryId: {}, alertsByFactoryId: {} },
+          ui: { workersSearch: "", alertsType: "All", alertsSearch: "", alertsTopOnly: 10 }
+        };
+
+        function escapeHtml(str) {
+          return String(str ?? "")
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
+        }
+
+        function showToast(type, title, message) {
+          const toast = document.createElement("div");
+          toast.className = "toast " + type;
+          toast.innerHTML = `
+            <div class="dot" aria-hidden="true"></div>
+            <div>
+              <div class="title">${escapeHtml(title)}</div>
+              <div class="message">${escapeHtml(message)}</div>
+            </div>
+          `;
+          toastContainer.appendChild(toast);
+          setTimeout(() => toast.remove(), 3600);
+        }
+
+        function fmtDate(d) {
+          if (!d) return "-";
+          const date = new Date(d);
+          if (Number.isNaN(date.getTime())) return "-";
+          return date.toLocaleString();
+        }
+
+        function badgeForAlertType(type) {
+          if (type === "Danger") return { cls: "badge danger", label: "Danger" };
+          if (type === "Warning") return { cls: "badge warning", label: "Warning" };
+          return { cls: "badge ok", label: "Normal" };
+        }
+
+        function withAuthHeaders(headers) {
+          return Object.assign({ Authorization: "Bearer " + token }, headers || {});
+        }
+
+        function setPageActive(pageId) {
+          document.querySelectorAll(".nav-item").forEach((b) => {
+            b.classList.toggle("active", b.dataset.page === pageId);
+          });
+          document.querySelectorAll(".page").forEach((p) => {
+            p.classList.toggle("active", p.dataset.page === pageId);
+          });
+
+          const titleMap = {
+            dashboard: "Dashboard",
+            workers: "Workers",
+            alerts: "Alerts",
+            sensor: "Sensor Feed",
+            "factories-zones": "Factories & Zones"
+          };
+          const subtitleMap = {
+            dashboard: "KPIs and recent alerts per selected factory",
+            workers: "Search workers, add and delete with admin privileges",
+            alerts: "Filter and review alerts from the alert log",
+            sensor: "Send sensor payloads using your factory API key",
+            "factories-zones": "Manage factory zones (SystemAdmin)"
+          };
+          elPageTitle.textContent = titleMap[pageId] || "Dashboard";
+          elPageSubtitle.textContent = subtitleMap[pageId] || "";
+        }
+
+        function hideShowByRole() {
+          document.getElementById("btn-add-worker").style.display = isAdmin ? "inline-flex" : "none";
+          document.getElementById("btn-add-zone").style.display = isSystemAdmin ? "inline-flex" : "none";
+          document.getElementById("btn-open-add-factory").style.display = isAdmin ? "inline-flex" : "none";
+
+          const canViewWorkers = isAdmin || isSupervisor;
+          const canViewAlerts = isAdmin || isSupervisor;
+
+          if (!canViewWorkers) {
+            document.getElementById("nav-workers").style.display = "none";
+            document.getElementById("page-workers").style.display = "none";
+          }
+
+          if (!canViewAlerts) {
+            document.getElementById("nav-alerts").style.display = "none";
+            document.getElementById("page-alerts").style.display = "none";
+          }
+          if (!isAdmin && !isSystemAdmin) {
+            document.getElementById("nav-factories-zones").style.display = "none";
+            document.getElementById("page-factories-zones").style.display = "none";
+          }
+        }
+
+        function updateFactoryContextUI() {
+          const factory = state.factories.find((f) => String(f.id) === String(state.selectedFactoryId));
+          const zonesCount = factory?.zones?.length ?? 0;
+          document.getElementById("factory-context").textContent =
+            `Selected: ${factory?.name || "Unknown"} | Factory ID: ${state.selectedFactoryId || "-"} | Zones: ${zonesCount}`;
+
+          const apiKeyInput = document.getElementById("sensor-api-key");
+          if (apiKeyInput && factory?.apiKey) apiKeyInput.value = factory.apiKey;
+        }
+
+        function renderFactoriesSidebar() {
+          elFactories.innerHTML = "";
+          if (!state.factories.length) {
+            elFactories.innerHTML = '<div class="empty-state">No factories</div>';
+            return;
+          }
+          state.factories.forEach((f) => {
+            const btn = document.createElement("button");
+            btn.className = "factory-item" + (String(f.id) === String(state.selectedFactoryId) ? " active" : "");
+            btn.type = "button";
+            btn.addEventListener("click", () => {
+              state.selectedFactoryId = f.id;
+              renderFactoriesSidebar();
+              updateFactoryContextUI();
+              refreshActivePage();
+            });
+            btn.innerHTML = `
+              <span class="factory-name" title="${escapeHtml(f.name)}">${escapeHtml(f.name)}</span>
+              <span class="pill">${escapeHtml(String(f.zones?.length || 0))} zones</span>
+            `;
+            elFactories.appendChild(btn);
+          });
+        }
+
+        async function fetchFactories() {
+          if (!isAdmin) {
+            state.factories = [{ id: userFactoryId, name: "My Factory", apiKey: null, zones: [] }];
+            state.selectedFactoryId = userFactoryId;
+            renderFactoriesSidebar();
+            return;
+          }
+
+          const res = await fetch(API_BASE + "/api/factories", { method: "GET", headers: withAuthHeaders({}) });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(data?.error || data?.message || "Failed to load factories");
+
+          state.factories = (data || []).map((f) => ({
+            id: f._id,
+            name: f.name,
+            apiKey: f.apiKey,
+            zones: f.zones || []
+          }));
+          state.selectedFactoryId = state.factories[0]?.id || userFactoryId;
+          renderFactoriesSidebar();
+        }
+
+        async function fetchWorkers() {
+          const selected = state.selectedFactoryId;
+          if (state.caches.workersByFactoryId[selected]) return state.caches.workersByFactoryId[selected];
+          const res = await fetch(API_BASE + "/api/workers", { method: "GET", headers: withAuthHeaders({}) });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(data?.error || data?.message || "Failed to load workers");
+          const workers = data?.workers || [];
+          state.caches.workersByFactoryId[selected] = workers;
+          return workers;
+        }
+
+        async function fetchAlerts() {
+          const selected = state.selectedFactoryId;
+          if (state.caches.alertsByFactoryId[selected]) return state.caches.alertsByFactoryId[selected];
+          const res = await fetch(API_BASE + "/api/alerts", { method: "GET", headers: withAuthHeaders({}) });
+          const data = await res.json().catch(() => []);
+          if (!res.ok) throw new Error(data?.error || data?.message || "Failed to load alerts");
+          const alerts = Array.isArray(data) ? data : [];
+          alerts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+          state.caches.alertsByFactoryId[selected] = alerts;
+          return alerts;
+        }
+
+        function renderAlertsList(alerts, topN) {
+          const list = alerts.slice(0, topN || 10);
+          if (!list.length) return '<div class="empty-state">No alerts found.</div>';
+          return `
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>When</th>
+                  <th>Worker</th>
+                  <th>Type</th>
+                  <th>Message</th>
+                  <th class="nowrap">Temp / Gas</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${list
+                  .map((a) => {
+                    const b = badgeForAlertType(a.type);
+                    return `
+                      <tr>
+                        <td>${escapeHtml(fmtDate(a.date))}</td>
+                        <td class="nowrap">${escapeHtml(a.workerID || "-")}</td>
+                        <td><span class="${b.cls}">${escapeHtml(b.label)}</span></td>
+                        <td>${escapeHtml(a.message || a.type || "")}${a.flameDetected === true ? " 🔥" : ""}</td>
+                        <td class="nowrap">${escapeHtml(String(a.temperature ?? "-"))} / ${escapeHtml(String(a.gasLevel ?? "-"))}</td>
+                      </tr>
+                    `;
+                  })
+                  .join("")}
+              </tbody>
+            </table>
+          `;
+        }
+
+        function renderDashboard(workers, alerts) {
+          const dangerAlerts = alerts.filter((a) => a.type === "Danger");
+          const normalAlerts = alerts.filter((a) => a.type === "Normal");
+          const last = alerts[0]?.date;
+
+          document.getElementById("kpi-workers").textContent = String(workers.length);
+          document.getElementById("kpi-workers-hint").textContent =
+            "For " +
+            (state.factories.find((f) => String(f.id) === String(state.selectedFactoryId))?.name || "selected factory");
+
+          document.getElementById("kpi-danger").textContent = String(dangerAlerts.length);
+          document.getElementById("kpi-danger-hint").textContent = dangerAlerts.length ? "Review recent danger events" : "All clear";
+
+          document.getElementById("kpi-normal").textContent = String(normalAlerts.length);
+          document.getElementById("kpi-normal-hint").textContent = normalAlerts.length ? "Latest status updates" : "No data yet";
+
+          document.getElementById("kpi-last").textContent = last ? fmtDate(last) : "-";
+          document.getElementById("alerts-list").innerHTML = renderAlertsList(alerts, state.ui.alertsTopOnly);
+        }
+
+        function renderWorkersTable(workers) {
+          const search = String(state.ui.workersSearch || "").trim().toLowerCase();
+          const filtered = !search
+            ? workers
+            : workers.filter((w) => {
+                const id = String(w.workerID || "").toLowerCase();
+                const fn = String(w.firstName || "").toLowerCase();
+                const ln = String(w.lastName || "").toLowerCase();
+                return id.includes(search) || fn.includes(search) || ln.includes(search);
+              });
+
+          if (!filtered.length) return '<div class="empty-state">No workers match your search.</div>';
+
+          return `
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Worker ID</th>
+                  <th>First Name</th>
+                  <th>Last Name</th>
+                  <th class="nowrap">Age</th>
+                  <th>Role</th>
+                  <th class="nowrap">Factory</th>
+                  <th class="nowrap">Zone</th>
+                  <th class="nowrap">Location</th>
+                  <th class="nowrap">Last Location</th>
+                  <th class="nowrap">Created</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${filtered
+                  .map((w) => {
+                    const coords = w.location?.coordinates || [];
+                    const lng = coords[0];
+                    const lat = coords[1];
+                    const locationStr = lat === undefined || lng === undefined ? "-" : `${lat}, ${lng}`;
+                    const lastLocationStr =
+                      w.lastLocation?.lat === undefined || w.lastLocation?.lng === undefined
+                        ? "-"
+                        : `${w.lastLocation.lat}, ${w.lastLocation.lng}`;
+                    const zoneStr =
+                      typeof w.zone === "object" && w.zone !== null
+                        ? w.zone.zoneName || w.zone._id || "-"
+                        : w.zone || "-";
+                    return `
+                      <tr>
+                        <td class="nowrap">${escapeHtml(w.workerID || "-")}</td>
+                        <td>${escapeHtml(String(w.firstName || "-"))}</td>
+                        <td>${escapeHtml(String(w.lastName || "-"))}</td>
+                        <td class="nowrap">${escapeHtml(String(w.age ?? "-"))}</td>
+                        <td>${escapeHtml(w.role || "-")}</td>
+                        <td class="nowrap">${escapeHtml(String(w.factory || "-"))}</td>
+                        <td class="nowrap">${escapeHtml(String(zoneStr))}</td>
+                        <td class="nowrap">${escapeHtml(locationStr)}</td>
+                        <td class="nowrap">${escapeHtml(lastLocationStr)}</td>
+                        <td class="nowrap">${escapeHtml(fmtDate(w.createdAt))}</td>
+                        <td>${
+                          isAdmin
+                            ? `<button class="btn danger" type="button" data-delete-worker="${escapeHtml(w.workerID)}">Delete</button>`
+                            : '<span class="muted">Admin only</span>'
+                        }</td>
+                      </tr>
+                    `;
+                  })
+                  .join("")}
+              </tbody>
+            </table>
+          `;
+        }
+
+        function renderAlertsTable(alerts) {
+          const typeFilter = String(state.ui.alertsType || "All");
+          const search = String(state.ui.alertsSearch || "").trim().toLowerCase();
+          const filtered = alerts.filter((a) => {
+            const typeOk = typeFilter === "All" ? true : String(a.type) === typeFilter;
+            if (!typeOk) return false;
+            if (!search) return true;
+            const id = String(a.workerID || "").toLowerCase();
+            const msg = String(a.message || "").toLowerCase();
+            return id.includes(search) || msg.includes(search);
+          });
+
+          if (!filtered.length) return '<div class="empty-state">No alerts match your filters.</div>';
+
+          return `
+            <table class="table">
+              <thead>
+                <tr>
+                  <th class="nowrap">Date</th>
+                  <th>Worker</th>
+                  <th>Type</th>
+                  <th>Message</th>
+                  <th class="nowrap">Temp / Gas</th>
+                  <th class="nowrap">Flame</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${filtered
+                  .map((a) => {
+                    const b = badgeForAlertType(a.type);
+                    const flame = a.flameDetected === true ? "Yes" : "No";
+                    return `
+                      <tr>
+                        <td class="nowrap">${escapeHtml(fmtDate(a.date))}</td>
+                        <td class="nowrap">${escapeHtml(a.workerID || "-")}</td>
+                        <td><span class="${b.cls}">${escapeHtml(b.label)}</span></td>
+                        <td>${escapeHtml(a.message || "-")}</td>
+                        <td class="nowrap">${escapeHtml(String(a.temperature ?? "-"))} / ${escapeHtml(String(a.gasLevel ?? "-"))}</td>
+                        <td class="nowrap">${escapeHtml(flame)}</td>
+                      </tr>
+                    `;
+                  })
+                  .join("")}
+              </tbody>
+            </table>
+          `;
+        }
+
+        async function refreshDashboard() {
+          updateFactoryContextUI();
+          const workers = isWorkerRole ? [] : await fetchWorkers().catch((e) => (showToast("error", "Workers", e.message || String(e)), []));
+          const alerts = await fetchAlerts().catch((e) => (showToast("error", "Alerts", e.message || String(e)), []));
+          renderDashboard(workers, alerts);
+        }
+
+        async function refreshWorkers() {
+          if (isWorkerRole) {
+            document.getElementById("workers-table-wrap").innerHTML = '<div class="empty-state">Access denied.</div>';
+            return;
+          }
+          document.getElementById("workers-table-wrap").innerHTML = '<div class="help-text">Loading workers...</div>';
+          const workers = await fetchWorkers().catch((e) => (showToast("error", "Workers", e.message || String(e)), []));
+          document.getElementById("workers-table-wrap").innerHTML = renderWorkersTable(workers);
+          document.querySelectorAll("[data-delete-worker]").forEach((btn) => {
+            btn.addEventListener("click", () => deleteWorker(btn.getAttribute("data-delete-worker")));
+          });
+        }
+
+        async function refreshAlerts() {
+          if (isWorkerRole) {
+            document.getElementById("alerts-table-wrap").innerHTML = '<div class="empty-state">Access denied.</div>';
+            return;
+          }
+          document.getElementById("alerts-table-wrap").innerHTML = '<div class="help-text">Loading alerts...</div>';
+          const alerts = await fetchAlerts().catch((e) => (showToast("error", "Alerts", e.message || String(e)), []));
+          document.getElementById("alerts-table-wrap").innerHTML = renderAlertsTable(alerts);
+        }
+
+        function refreshFactoriesZones() {
+          const wrap = document.getElementById("factories-zones-wrap");
+          const selected = state.selectedFactoryId;
+          const selectedFactory = state.factories.find((f) => String(f.id) === String(selected));
+          if (!selectedFactory) {
+            wrap.innerHTML = '<div class="empty-state">No factory selected.</div>';
+            return;
+          }
+
+          if (isAdmin) {
+            wrap.innerHTML = `
+              <div class="help-text">Admin overview: zone actions are for SystemAdmin only.</div>
+              <div style="height: 10px"></div>
+              <table class="table">
+                <thead><tr><th>Factory</th><th class="nowrap">Zones</th><th>Zone types</th></tr></thead>
+                <tbody>
+                  ${state.factories
+                    .map((f) => {
+                      const types = (f.zones || []).reduce((acc, z) => {
+                        const t = z.type || "unknown";
+                        acc[t] = (acc[t] || 0) + 1;
+                        return acc;
+                      }, {});
+                      const typesStr = Object.keys(types).length
+                        ? Object.keys(types).map((t) => `${t} (${types[t]})`).join(", ")
+                        : "-";
+                      return `
+                        <tr>
+                          <td><b>${escapeHtml(f.name)}</b><div class="help-text" style="margin-top: 2px">${escapeHtml(String(f.id))}</div></td>
+                          <td class="nowrap">${escapeHtml(String(f.zones?.length || 0))}</td>
+                          <td>${escapeHtml(typesStr)}</td>
+                        </tr>
+                      `;
+                    })
+                    .join("")}
+                </tbody>
+              </table>
+            `;
+          } else {
+            const zones = selectedFactory.zones || [];
+            wrap.innerHTML = zones.length
+              ? `
+                <div class="help-text">Selected: <b>${escapeHtml(selectedFactory.name)}</b></div>
+                <div style="height: 10px"></div>
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>Zone name</th><th>Type</th><th class="nowrap">Center (lat,lng)</th><th class="nowrap">Radius</th><th class="nowrap">Threshold</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${zones
+                      .map((z) => {
+                        return `
+                          <tr>
+                            <td class="nowrap">${escapeHtml(String(z.zoneName || "-"))}</td>
+                            <td>${escapeHtml(String(z.type || "-"))}</td>
+                            <td class="nowrap">${escapeHtml(String(z.center?.lat ?? "-"))}, ${escapeHtml(String(z.center?.lng ?? "-"))}</td>
+                            <td class="nowrap">${escapeHtml(String(z.radius ?? "-"))}</td>
+                            <td class="nowrap">${escapeHtml(String(z.threshold ?? "-"))}</td>
+                          </tr>
+                        `;
+                      })
+                      .join("")}
+                  </tbody>
+                </table>
+              `
+              : '<div class="empty-state">No zones configured.</div>';
+          }
+        }
+
+        function refreshActivePage() {
+          const active = document.querySelector(".page.active")?.dataset?.page || "dashboard";
+          if (active === "dashboard") return refreshDashboard();
+          if (active === "workers") return refreshWorkers();
+          if (active === "alerts") return refreshAlerts();
+          if (active === "factories-zones") return refreshFactoriesZones();
+          return Promise.resolve();
+        }
+
+        document.getElementById("btn-refresh").addEventListener("click", async () => {
+          const selected = state.selectedFactoryId;
+          if (selected) {
+            delete state.caches.workersByFactoryId[selected];
+            delete state.caches.alertsByFactoryId[selected];
+          }
+          showToast("info", "Refreshing", "Reloading data...");
+          await refreshActivePage();
+        });
+
+        document.getElementById("btn-logout").addEventListener("click", () => {
+          localStorage.removeItem("sv_token");
+          localStorage.removeItem("sv_user");
+          window.location.href = "index.html";
+        });
+
+        document.querySelectorAll(".nav-item").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            setPageActive(btn.dataset.page);
+            if (btn.dataset.page === "dashboard") refreshDashboard();
+            if (btn.dataset.page === "workers") refreshWorkers();
+            if (btn.dataset.page === "alerts") refreshAlerts();
+            if (btn.dataset.page === "factories-zones") refreshFactoriesZones();
+          });
+        });
+
+        document.getElementById("btn-alerts-top").addEventListener("click", () => {
+          state.ui.alertsTopOnly = 10;
+          const selected = state.selectedFactoryId;
+          const workers = state.caches.workersByFactoryId[selected] || [];
+          const alerts = state.caches.alertsByFactoryId[selected] || [];
+          renderDashboard(workers, alerts);
+        });
+
+        // Workers: search + modal + CRUD
+        document.getElementById("workers-search").addEventListener("input", (e) => {
+          state.ui.workersSearch = e.target.value;
+          const selected = state.selectedFactoryId;
+          const workers = state.caches.workersByFactoryId[selected] || [];
+          document.getElementById("workers-table-wrap").innerHTML = renderWorkersTable(workers);
+          document.querySelectorAll("[data-delete-worker]").forEach((btn) => {
+            btn.addEventListener("click", () => deleteWorker(btn.getAttribute("data-delete-worker")));
+          });
+        });
+
+        const workerModalOverlay = document.getElementById("worker-modal-overlay");
+        const workerModalClose = document.getElementById("worker-modal-close");
+        const workerModalCancel = document.getElementById("worker-modal-cancel");
+        const workerModalSubmit = document.getElementById("worker-modal-submit");
+
+        function openWorkerModal() {
+          if (!isAdmin) return;
+          workerModalOverlay.classList.add("show");
+          workerModalOverlay.setAttribute("aria-hidden", "false");
+        }
+        function closeWorkerModal() {
+          workerModalOverlay.classList.remove("show");
+          workerModalOverlay.setAttribute("aria-hidden", "true");
+        }
+
+        workerModalClose.addEventListener("click", closeWorkerModal);
+        workerModalCancel.addEventListener("click", closeWorkerModal);
+        workerModalOverlay.addEventListener("click", (e) => {
+          if (e.target === workerModalOverlay) closeWorkerModal();
+        });
+        document.getElementById("btn-add-worker").addEventListener("click", openWorkerModal);
+
+        async function addWorker(payload) {
+          const res = await fetch(API_BASE + "/api/workers", {
+            method: "POST",
+            headers: withAuthHeaders({ "Content-Type": "application/json" }),
+            body: JSON.stringify(payload)
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(data?.error || data?.message || "Failed to add worker");
+          return data;
+        }
+
+        async function deleteWorker(workerID) {
+          if (!workerID) return;
+          const ok = window.confirm("Delete worker " + workerID + "? This cannot be undone.");
+          if (!ok) return;
+          try {
+            const res = await fetch(API_BASE + "/api/workers/" + encodeURIComponent(workerID), {
+              method: "DELETE",
+              headers: withAuthHeaders({})
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) throw new Error(data?.error || data?.message || "Failed to delete worker");
+            showToast("success", "Worker deleted", "The worker was removed successfully.");
+            // Invalidate caches so UI refreshes with server data.
+            if (state.selectedFactoryId) {
+              delete state.caches.workersByFactoryId[state.selectedFactoryId];
+              delete state.caches.alertsByFactoryId[state.selectedFactoryId];
+            }
+            await refreshWorkers();
+            await refreshDashboard();
+          } catch (err) {
+            showToast("error", "Delete failed", err.message || String(err));
+          }
+        }
+
+        workerModalSubmit.addEventListener("click", async () => {
+          if (!state.selectedFactoryId) {
+            showToast("error", "Missing factory", "Please select a factory before adding a worker.");
+            return;
+          }
+
+          const payload = {
+            workerID: document.getElementById("w-workerID").value.trim(),
+            firstName: document.getElementById("w-firstName").value.trim(),
+            lastName: document.getElementById("w-lastName").value.trim(),
+            age: Number(document.getElementById("w-age").value),
+            role: document.getElementById("w-role").value,
+            latitude: Number(document.getElementById("w-lat").value),
+            longitude: Number(document.getElementById("w-lng").value),
+            factory: state.selectedFactoryId
+          };
+
+          try {
+            workerModalSubmit.disabled = true;
+            workerModalSubmit.textContent = "Adding...";
+            await addWorker(payload);
+            showToast("success", "Worker added", "The worker was created successfully.");
+            closeWorkerModal();
+            // Invalidate cache so UI refreshes with server data.
+            if (state.selectedFactoryId) {
+              delete state.caches.workersByFactoryId[state.selectedFactoryId];
+              delete state.caches.alertsByFactoryId[state.selectedFactoryId];
+            }
+            setPageActive("workers");
+            await refreshWorkers();
+          
+          } catch (err) {
+            showToast("error", "Add worker failed", err.message || String(err));
+          } finally {
+            workerModalSubmit.disabled = false;
+            workerModalSubmit.textContent = "Add";
+          }
+        });
+
+        // Alerts: filter + render
+        document.getElementById("alerts-type-filter").addEventListener("change", (e) => {
+          state.ui.alertsType = e.target.value;
+          const selected = state.selectedFactoryId;
+          const alerts = state.caches.alertsByFactoryId[selected] || [];
+          document.getElementById("alerts-table-wrap").innerHTML = renderAlertsTable(alerts);
+        });
+        document.getElementById("alerts-search").addEventListener("input", (e) => {
+          state.ui.alertsSearch = e.target.value;
+          const selected = state.selectedFactoryId;
+          const alerts = state.caches.alertsByFactoryId[selected] || [];
+          document.getElementById("alerts-table-wrap").innerHTML = renderAlertsTable(alerts);
+        });
+
+        // Sensor Feed: POST /api/sensor-data with x-api-key
+        function getSensorPayload() {
+          return {
+            workerID: document.getElementById("sensor-worker-id").value.trim(),
+            temperature: Number(document.getElementById("sensor-temperature").value),
+            gasLevel: Number(document.getElementById("sensor-gas-level").value),
+            flameDetected: document.getElementById("sensor-flame").value === "true",
+            latitude: Number(document.getElementById("sensor-lat").value),
+            longitude: Number(document.getElementById("sensor-lng").value)
+          };
+        }
+
+        document.getElementById("btn-send-sensor").addEventListener("click", async () => {
+          const apiKey = document.getElementById("sensor-api-key").value.trim();
+          const payload = getSensorPayload();
+          const responseEl = document.getElementById("sensor-response");
+          responseEl.textContent = "Sending...";
+          try {
+            const res = await fetch(API_BASE + "/api/sensor-data", {
+              method: "POST",
+              headers: { "Content-Type": "application/json", "x-api-key": apiKey },
+              body: JSON.stringify(payload)
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) throw new Error(data?.error || data?.message || "Sensor request failed");
+            const alertText = data?.alert ? " | alert: " + data.alert : "";
+            responseEl.textContent =
+              "OK: " + (data?.status || "received") + alertText + " (currentStatus: " + (data?.currentStatus || "-") + ")";
+            showToast("success", "Sensor sent", "Payload received successfully.");
+            // refresh alerts after payload
+            delete state.caches.alertsByFactoryId[state.selectedFactoryId];
+            await refreshDashboard();
+            await refreshAlerts();
+          } catch (err) {
+            responseEl.textContent = "Error: " + (err.message || String(err));
+            showToast("error", "Sensor failed", err.message || String(err));
+          }
+        });
+
+        document.getElementById("btn-send-sample").addEventListener("click", () => {
+          document.getElementById("sensor-worker-id").value = user?.workerID || "W-1001";
+          document.getElementById("sensor-temperature").value = 55.2;
+          document.getElementById("sensor-gas-level").value = 3.1;
+          document.getElementById("sensor-flame").value = "false";
+          document.getElementById("sensor-lat").value = 24.7136;
+          document.getElementById("sensor-lng").value = 46.6753;
+        });
+
+        // Factories & Zones: SystemAdmin add zone (backend supports CRUD; UI uses prompts to keep single-file size small)
+        document.getElementById("btn-add-zone").addEventListener("click", async () => {
+          if (!isSystemAdmin) {
+            showToast("error", "Access denied", "Only SystemAdmin can add zones.");
+            return;
+          }
+          const factoryId = state.selectedFactoryId;
+          if (!factoryId) {
+            showToast("error", "Missing factory", "Select a factory first.");
+            return;
+          }
+
+          const zoneName = window.prompt("Zone name (zoneName):", "Zone A");
+          if (!zoneName) return;
+          const type = window.prompt("Zone type (gas | temperature | flame):", "gas");
+          if (!type) return;
+          const centerLat = Number(window.prompt("Center latitude:", "24.7136"));
+          const centerLng = Number(window.prompt("Center longitude:", "46.6753"));
+          const radius = Number(window.prompt("Radius (meters):", "250"));
+          const threshold = Number(window.prompt("Threshold:", "10"));
+
+          if ([centerLat, centerLng, radius, threshold].some((n) => Number.isNaN(n))) {
+            showToast("error", "Invalid values", "Latitude/longitude/radius/threshold must be numbers.");
+            return;
+          }
+
+          try {
+            const res = await fetch(API_BASE + "/api/factories/" + encodeURIComponent(factoryId) + "/zones", {
+              method: "POST",
+              headers: withAuthHeaders({ "Content-Type": "application/json" }),
+              body: JSON.stringify({
+                zoneName: String(zoneName),
+                type: String(type),
+                center: { lat: centerLat, lng: centerLng },
+                radius,
+                threshold
+              })
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) throw new Error(data?.error || data?.message || "Failed to add zone");
+
+            showToast("success", "Zone added", "Zone saved successfully.");
+            if (Array.isArray(data?.zones)) {
+              const f = state.factories.find((x) => String(x.id) === String(factoryId));
+              if (f) f.zones = data.zones;
+              renderFactoriesSidebar();
+            }
+            refreshFactoriesZones();
+          } catch (err) {
+            showToast("error", "Add zone failed", err.message || String(err));
+          }
+        });
+
+        // Init
+        hideShowByRole();
+        setPageActive("dashboard");
+        document.getElementById("btn-alerts-top").addEventListener("click", () => {
+          state.ui.alertsTopOnly = 10;
+          const selected = state.selectedFactoryId;
+          renderDashboard(
+            state.caches.workersByFactoryId[selected] || [],
+            state.caches.alertsByFactoryId[selected] || []
+          );
+        });
+
+        // Add Factory: modal + POST /api/factories
+        const factoryModalOverlay = document.getElementById("factory-modal-overlay");
+        const factoryModalClose = document.getElementById("factory-modal-close");
+        const factoryModalCancel = document.getElementById("factory-modal-cancel");
+        const factoryModalSubmit = document.getElementById("factory-modal-submit");
+        const factoryNameInput = document.getElementById("factory-name-input");
+        const btnOpenAddFactory = document.getElementById("btn-open-add-factory");
+
+        function openFactoryModal() {
+          if (!isAdmin) return;
+          factoryModalOverlay.classList.add("show");
+          factoryModalOverlay.setAttribute("aria-hidden", "false");
+          factoryNameInput.value = "";
+          factoryNameInput.focus();
+        }
+
+        function closeFactoryModal() {
+          factoryModalOverlay.classList.remove("show");
+          factoryModalOverlay.setAttribute("aria-hidden", "true");
+        }
+
+        btnOpenAddFactory.addEventListener("click", openFactoryModal);
+        factoryModalClose.addEventListener("click", closeFactoryModal);
+        factoryModalCancel.addEventListener("click", closeFactoryModal);
+        factoryModalOverlay.addEventListener("click", (e) => {
+          if (e.target === factoryModalOverlay) closeFactoryModal();
+        });
+
+        async function createFactory(factoryName) {
+          const res = await fetch(API_BASE + "/api/factories", {
+            method: "POST",
+            headers: withAuthHeaders({ "Content-Type": "application/json" }),
+            body: JSON.stringify({ name: factoryName })
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(data?.error || data?.message || "Failed to create factory");
+          return data;
+        }
+
+        factoryModalSubmit.addEventListener("click", async () => {
+          const factoryName = factoryNameInput.value.trim();
+          if (!factoryName) {
+            showToast("error", "Validation", "Factory name is required.");
+            return;
+          }
+
+          try {
+            factoryModalSubmit.disabled = true;
+            factoryModalSubmit.textContent = "Creating...";
+
+            const result = await createFactory(factoryName);
+            showToast("success", "Factory created", "Factory added successfully.");
+
+            await fetchFactories();
+            if (result?.factory?._id) {
+              state.selectedFactoryId = result.factory._id;
+              renderFactoriesSidebar();
+            }
+            updateFactoryContextUI();
+            await refreshActivePage();
+            closeFactoryModal();
+          } catch (err) {
+            showToast("error", "Create factory failed", err.message || String(err));
+          } finally {
+            factoryModalSubmit.disabled = false;
+            factoryModalSubmit.textContent = "Create Factory";
+          }
+        });
+
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "Escape" && factoryModalOverlay.classList.contains("show")) {
+            closeFactoryModal();
+          }
+          if (e.key === "Escape" && workerModalOverlay.classList.contains("show")) {
+            closeWorkerModal();
+          }
+        });
+
+        fetchFactories()
+          .then(async () => {
+            updateFactoryContextUI();
+            refreshFactoriesZones();
+            await refreshDashboard();
+          })
+          .catch((e) => {
+            showToast("error", "Init failed", e.message || String(e));
+            elPageSubtitle.textContent = "Check token and API connectivity.";
+          });
+      })();
+    </script>
+  </body>
+</html>
+

@@ -1,10 +1,12 @@
 const connectDB = require("./configDB");
 const express = require("express");
+const path = require("path");
 require("dotenv").config();
 const app = express();
 
 // middleware
 app.use(express.json());
+app.use(express.static(path.join(__dirname, "../frontend/public")));
 
 //DB
 connectDB();
@@ -40,7 +42,7 @@ app.use("/api/auth", authRoutes);
 
 // test route
 app.get("/", (req, res) => {
-  res.send("Smart Vest API is running");
+  res.sendFile(path.join(__dirname, "../frontend/public/index.html"));
 });
 
 // start server
