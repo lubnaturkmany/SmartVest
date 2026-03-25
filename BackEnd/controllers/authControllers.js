@@ -6,10 +6,10 @@ const jwt = require("jsonwebtoken");
 // ================= REGISTER =================
 const register = async (req, res) => {
   try {
-    const { username, email, password, role, workerID } = req.body;
+    const { username, email, role, workerID } = req.body;
 
-    if (!username || !email || !password) {
-      return res.status(400).json({ error: "Username, email, and password are required" });
+    if (!username || !email ) {
+      return res.status(400).json({ error: "Username, email, are required" });
     }
 
     const existingUser = await User.findOne({ $or: [{ email }, { username }] });
@@ -23,15 +23,20 @@ const register = async (req, res) => {
     const newUser = new User({
       username: username.trim(),
       email,
-      password: hashedPassword,
+      //password: hashedPassword,
       role,
       workerID: workerID || null,
       factory: req.user?.factory || null, // حماية إذا ما في req.user
     });
+    
+    const crypto = require("crypto");
+    const token = crypto.randomBytes(32).toString("hex");
+    newUser.verificationToken = token;
+    newUser.verificationTokenExpires = Date.now() + 3600000;
 
     await newUser.save();
 
-    res.status(201).json({ message: "User registered successfully" });
+    res.status(201).json({ message: "User registered successfully",verificationToken: token });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
