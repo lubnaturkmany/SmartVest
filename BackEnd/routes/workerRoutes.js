@@ -9,13 +9,13 @@ const {
     deleteAllWorkers 
       } = require("../controllers/workerControllers"); 
 // إضافة عامل → Admin فقط
-router.post("/", protect, authorizeRoles("ADMIN" , "HR"), addWorker);
+router.post("/", protect, authorizeRoles("ADMIN"), addWorker);
 
 // عرض كل العمال → Admin + Supervisor
-router.get("/", protect, authorizeRoles("ADMIN", "HR" , "SECURITY"), getAllWorkers);
+router.get("/", protect, authorizeRoles("ADMIN", "SECURITY"), getAllWorkers);
 
 // عرض عامل معين → Admin + Supervisor
-router.get("/:workerID", protect, authorizeRoles("ADMIN", "HR" , "SECURITY"), getWorkerByID);
+router.get("/:workerID", protect, authorizeRoles("ADMIN", "SECURITY"), getWorkerByID);
 
 // حذف عامل معين → Admin فقط
 router.delete("/:workerID", protect, authorizeRoles("ADMIN"), deleteWorkerByID);

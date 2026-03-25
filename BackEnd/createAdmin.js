@@ -39,7 +39,7 @@ async function createFirstAdmin() {
 
     // إعداد البريد
     const transporter = nodemailer.createTransport({
-      host: "smtp.mailtrap.io", // استخدمي SMTP صالح
+      host: "smtp.mailtrap.io", //  صالح SMTP استخدمي
       port: 587,
       auth: {
         user: process.env.SMTP_USER,
