@@ -8,7 +8,7 @@
             "type": "chrome",
             "request": "launch",
             "name": "Open login.html",
-            "file": "c:\\Users\\user\\OneDrive\\Documents\\SmartVest\\FrontEnd\\public\\login.html"
+            "file": "c:\\Users\\user\\OneDrive\\Documents\\SmartVest\\FrontEnd\\public\\index.html"
         }
     ]
 }
