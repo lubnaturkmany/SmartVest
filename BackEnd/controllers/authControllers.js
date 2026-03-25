@@ -2,23 +2,21 @@ const User = require("../models/user");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
-// Register a new user
+
+// ================= REGISTER =================
 const register = async (req, res) => {
   try {
-    const { username, email, password, role, workerID, factory } = req.body;
+    const { username, email, password, role, workerID } = req.body;
 
-    // Validate required fields
     if (!username || !email || !password) {
       return res.status(400).json({ error: "Username, email, and password are required" });
     }
 
-    // Check if user already exists
     const existingUser = await User.findOne({ $or: [{ email }, { username }] });
     if (existingUser) {
       return res.status(400).json({ error: "Username or email already in use" });
     }
 
-    // Hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
@@ -26,9 +24,9 @@ const register = async (req, res) => {
       username: username.trim(),
       email,
       password: hashedPassword,
-      role: role,
+      role,
       workerID: workerID || null,
-      factory: req.user.factory, // ✅ ADDED: store factory reference
+      factory: req.user?.factory || null, // حماية إذا ما في req.user
     });
 
     await newUser.save();
@@ -39,7 +37,8 @@ const register = async (req, res) => {
   }
 };
 
-// Login
+
+// ================= LOGIN =================
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -48,25 +47,27 @@ const login = async (req, res) => {
       return res.status(400).json({ error: "Email and password are required" });
     }
 
-    // Find user
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(401).json({ error: "Invalid credentials" });
     }
 
-    // Compare password
+    // 🔴 مهم: إذا المستخدم لسا ما حط باسورد
+    if (!user.password) {
+      return res.status(403).json({ error: "Please set your password first" });
+    }
+
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(401).json({ error: "Invalid credentials" });
     }
 
-    // ✅ FIXED: JWT now includes factory so req.user.factory works in all controllers
     const token = jwt.sign(
       {
         id: user._id,
         role: user.role,
         workerID: user.workerID,
-        factory: user.factory,  // ✅ ADDED
+        factory: user.factory,
       },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
@@ -81,7 +82,7 @@ const login = async (req, res) => {
         email: user.email,
         role: user.role,
         workerID: user.workerID,
-        factory: user.factory, // ✅ ADDED
+        factory: user.factory,
       },
     });
   } catch (error) {
@@ -89,10 +90,10 @@ const login = async (req, res) => {
   }
 };
 
-// Get current logged-in user profile
+
+// ================= GET ME =================
 const getMe = async (req, res) => {
   try {
-    // req.user is set by authMiddleware
     const user = await User.findById(req.user.id).select("-password");
     if (!user) {
       return res.status(404).json({ error: "User not found" });
@@ -103,8 +104,43 @@ const getMe = async (req, res) => {
   }
 };
 
+
+// ================= SET PASSWORD (🔥 الجديد) =================
+const setPasswordController = async (req, res) => {
+  try {
+    const { token, password } = req.body;
+
+    if (!token || !password) {
+      return res.status(400).json({ error: "Token and password are required" });
+    }
+
+    const user = await User.findOne({
+      verificationToken: token,
+      verificationTokenExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({ error: "Invalid or expired token" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    user.password = hashedPassword;
+    user.verificationToken = undefined;
+    user.verificationTokenExpires = undefined;
+
+    await user.save();
+
+    res.status(200).json({ message: "Password set successfully" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
 module.exports = {
   register,
   login,
   getMe,
+  setPasswordController, 
 };
