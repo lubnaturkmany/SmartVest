@@ -34,7 +34,7 @@ const factoryRoutes = require("./routes/factoryRoutes");
 //const verifyApiKey = require("./middleware/apiKeyMiddleware");
 
 app.use("/api/sensor-data", sensorLimiter, sensorRoutes);
-app.use("/api/auth/login", authLimiter, authRoutes);
+//app.use("/api/auth/login", authLimiter, authRoutes);
 app.use("/api/alerts", alertRoutes);
 app.use("/api/workers", workerRoutes);
 app.use("/api/factories", factoryRoutes);

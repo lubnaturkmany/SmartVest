@@ -2,7 +2,7 @@ const Factory = require("../models/factory");
 
 // التحقق من القفل 
 const checkConfigured = (factory, user) => {
-  if (factory.isConfigured && user.role !== "SystemAdmin") {
+  if (factory.isConfigured && user.role !== "ADMIN") {
     const err = new Error("Factory configuration is locked");
     err.status = 403;
     throw err;

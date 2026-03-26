@@ -38,25 +38,25 @@ async function createFirstAdmin() {
     await newAdmin.save();
 
     // إعداد البريد
-    const transporter = nodemailer.createTransport({
+    /*const transporter = nodemailer.createTransport({
       host: "smtp.mailtrap.io", //  صالح SMTP استخدمي
       port: 587,
       auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
       },
-    });
+    });*/
 
     const verificationUrl = `https://your-frontend.com/set-password?token=${token}`;
 
-    await transporter.sendMail({
+   /* await transporter.sendMail({
       from: '"SmartVest" <no-reply@smartvest.com>',
       to: firstAdmin.email,
       subject: "Activate your Admin account",
       html: `<p>Welcome! Click the link below to set your password and activate your Admin account:</p>
              <a href="${verificationUrl}">Set Password</a>
              <p>This link expires in 1 hour.</p>`,
-    });
+    });*/
 
     console.log("First Admin created and email sent!");
     process.exit(0);

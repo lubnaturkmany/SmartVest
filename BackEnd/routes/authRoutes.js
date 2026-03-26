@@ -4,8 +4,10 @@ const { register, login, getMe, setPasswordController } = require("../controller
 const { protect , authorizeRoles  } = require("../middleware/authMiddleware");
 
 // POST /api/auth/register
-router.post("/register",protect,authorizeRoles("ADMIN"),register);
-
+//router.post("/register",protect,authorizeRoles("ADMIN"),register);
+router.post("/register", (req,res) =>{
+    return res.send("working");
+});
 // POST /api/auth/login
 router.post("/login", login);
 
