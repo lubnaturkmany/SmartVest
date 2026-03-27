@@ -1,10 +1,16 @@
 const connectDB = require("./configDB");
 const express = require("express");
 const path = require("path");
+const cors = require("cors"); 
+
 require("dotenv").config();
 const app = express();
 
 // middleware
+app.use(cors({
+  origin: "http://localhost:5173", 
+  credentials: true
+}));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "../frontend/public")));
 
