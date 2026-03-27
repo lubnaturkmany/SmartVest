@@ -1,17 +1,19 @@
 const express = require("express");
 const router = express.Router();
-const { register, login, getMe, setPasswordController } = require("../controllers/authControllers");
-const { protect , authorizeRoles  } = require("../middleware/authMiddleware");
 
-// POST /api/auth/register
-router.post("/register",protect,authorizeRoles("ADMIN"),register);
+const { register, login, getMe, changePassword } = require("../controllers/authControllers");
+const { protect, authorizeRoles } = require("../middleware/authMiddleware");
 
-// POST /api/auth/login
+// 🟢 ADMIN creates users
+router.post("/register", protect, authorizeRoles("ADMIN" , "FACTORY_MANAGER"), register);
+
+// 🟢 login
 router.post("/login", login);
 
-// GET /api/auth/me  (protected)
+// 🟢 get current user
 router.get("/me", protect, getMe);
 
-router.post("/set-password", setPasswordController);
+// 🟢 change password (first time or later)
+router.post("/change-password", protect, changePassword);
 
 module.exports = router;

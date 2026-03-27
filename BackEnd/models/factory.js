@@ -16,6 +16,8 @@ const factorySchema = new mongoose.Schema({
   name: { type: String, required: true, unique: true },
   apiKey: { type: String, required: true, default: () => crypto.randomBytes(16).toString("hex") },
   zones: { type: [zoneSchema], default: [] },
+  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  isConfigured: { type: Boolean, default: false },
 }, { timestamps: true });
 
 module.exports = mongoose.model("Factory", factorySchema);

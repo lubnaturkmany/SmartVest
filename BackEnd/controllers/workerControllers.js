@@ -14,7 +14,7 @@ const addWorker = async (req, res) => {
         return res.status(400).json({ error: "Invalid coordinates" });
     }
         // نتأكد كل المعلومات موجودة
-        if (!workerID || !firstName || !lastName || !age || !role || latitude === undefined || !longitude === undefined) {
+        if (!workerID || !firstName || !lastName || !age || !role || latitude === undefined || longitude === undefined) {
             return res.status(400).json({ error: "Missing worker info" });
         }
 
@@ -22,6 +22,13 @@ const addWorker = async (req, res) => {
         const existingWorker = await Worker.findOne({ workerID });
         if (existingWorker) {
             return res.status(400).json({ error: "Worker already exists" });
+        }
+
+        const factoryId = req.body.factory || req.user.factory;
+        if (!factoryId) {
+            return res.status(400).json({
+                error: "Factory is required. Send factory ID or assign a factory to your user account."
+            });
         }
 
         const newWorker = new Worker({ 
@@ -34,7 +41,7 @@ const addWorker = async (req, res) => {
                         type: "Point",
                         coordinates: [lng, lat]
                       }, 
-            factory: req.body.factory || req.user.factory,  
+            factory: factoryId,  
             zone        
         });
         await newWorker.save();
@@ -53,7 +60,10 @@ const findWorkerByID = async (workerID) => {
 // عرض كل العمال
 const getAllWorkers = async (req, res) => {
     try {
-        const workers = await Worker.find({ factory: req.user.factory });
+        const isAdminWithoutFactory =
+            req.user.role === "ADMIN" && (req.user.factory == null || req.user.factory === "");
+        const filter = isAdminWithoutFactory ? {} : { factory: req.user.factory };
+        const workers = await Worker.find(filter);
         res.json({ count: workers.length, workers });
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -70,10 +80,12 @@ const getWorkerByID = async (req, res) => {
             return res.status(403).json({ error: "Access denied" });
         }
 
-        const worker = await Worker.findOne({
-            workerID,
-            factory: req.user.factory
-        });
+        const isAdminWithoutFactory =
+            req.user.role === "ADMIN" && (req.user.factory == null || req.user.factory === "");
+        const query = isAdminWithoutFactory
+            ? { workerID }
+            : { workerID, factory: req.user.factory };
+        const worker = await Worker.findOne(query);
         if (!worker) return res.status(404).json({ error: "Worker not found" });
 
         res.json(worker);
@@ -86,10 +98,12 @@ const getWorkerByID = async (req, res) => {
 const deleteWorkerByID = async (req, res) => {
     try {
         const { workerID } = req.params;
-        const deletedWorker = await Worker.findOneAndDelete({
-             workerID,
-             factory: req.user.factory
-            });
+        const isAdminWithoutFactory =
+            req.user.role === "ADMIN" && (req.user.factory == null || req.user.factory === "");
+        const deleteQuery = isAdminWithoutFactory
+            ? { workerID }
+            : { workerID, factory: req.user.factory };
+        const deletedWorker = await Worker.findOneAndDelete(deleteQuery);
 
         if (!deletedWorker) {
             return res.status(404).json({ error: "Worker not found" });
@@ -104,7 +118,7 @@ const deleteWorkerByID = async (req, res) => {
 // حذف جميع العمال
 const deleteAllWorkers = async (req, res) => {
     try {
-        await Worker.deleteMany({ factory: req.user.factory });
+        const result = await Worker.deleteMany({ factory: req.user.factory });
         res.json({ message: `Deleted ${result.deletedCount} workers` });
     } catch (error) {
         res.status(500).json({ error: error.message });

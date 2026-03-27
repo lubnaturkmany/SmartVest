@@ -8,6 +8,7 @@ const userSchema = new mongoose.Schema(
       unique: true,
       trim: true,
     },
+
     email: {
       type: String,
       required: true,
@@ -15,35 +16,34 @@ const userSchema = new mongoose.Schema(
       trim: true,
       lowercase: true,
     },
+
     password: {
       type: String,
-      required: true,
+      required: true, // 🟢 صار إجباري
     },
+
     role: {
       type: String,
-      enum: ["ADMIN", "SECURITY", "SAFETY"],
-      required: true,
+      enum: ["ADMIN","FACTORY_MANAGER", "SECURITY", "SAFETY"],
+      default: "SECURITY", // 🟢 default آمن
     },
-    // Link to a worker profile if applicable
+
     workerID: {
       type: String,
       default: null,
     },
-    // ✅ ADDED: Link user to their factory (needed for all protected routes)
+
     factory: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Factory",
       default: null,
     },
-    // User model snippet
-    verificationToken: {
-      type: String,
-      default: null,
+
+    mustChangePassword: {
+      type: Boolean,
+      default: true,
     },
-    verificationTokenExpires: {
-      type: Date,
-      default: null,
-    },
+
   },
   { timestamps: true }
 );

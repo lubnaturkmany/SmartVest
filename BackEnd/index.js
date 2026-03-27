@@ -1,10 +1,30 @@
 const connectDB = require("./configDB");
 const express = require("express");
 const path = require("path");
+const fs = require("fs");
 const cors = require("cors"); 
-
 require("dotenv").config();
 const app = express();
+
+const publicDir = path.join(__dirname, "../frontend/dist");
+const setPasswordFile = path.join(__dirname, "../frontend/public/set-password.html");
+const indexFile = path.join(publicDir, "index.html");
+
+// أي طلب للرابط /set-password يفتح الصفحة الصحيحة
+app.get("/set-password", (req, res) => {
+  console.log("Serving set-password.html, token:", req.query.token);
+  if (!fs.existsSync(setPasswordFile)) {
+    return res.status(404).json({ error: "set-password page not found" });
+  }
+  res.sendFile(setPasswordFile);
+});
+// test route
+app.get("/", (req, res) => {
+  if (!fs.existsSync(indexFile)) {
+    return res.json({ message: "SmartVest backend is running" });
+  }
+  res.sendFile(indexFile);
+});
 
 // middleware
 app.use(cors({
@@ -12,7 +32,9 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json());
-app.use(express.static(path.join(__dirname, "../frontend/public")));
+if (fs.existsSync(publicDir)) {
+  app.use(express.static(publicDir));
+}
 
 //DB
 connectDB();
@@ -40,16 +62,12 @@ const factoryRoutes = require("./routes/factoryRoutes");
 //const verifyApiKey = require("./middleware/apiKeyMiddleware");
 
 app.use("/api/sensor-data", sensorLimiter, sensorRoutes);
-app.use("/api/auth/login", authLimiter, authRoutes);
+//app.use("/api/auth/login", authLimiter, authRoutes);
 app.use("/api/alerts", alertRoutes);
 app.use("/api/workers", workerRoutes);
 app.use("/api/factories", factoryRoutes);
 app.use("/api/auth", authRoutes);
 
-// test route
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "../FrontEnd/public/index.html"));
-});
 
 // start server
 app.listen(3000, () => {
