@@ -15,6 +15,7 @@ export default function UsersPage() {
   const { openModal } = useModal();
   const [form, setForm] = useState(initial);
   const [busy, setBusy] = useState(false);
+  const [showPanel, setShowPanel] = useState(false); // <<< التحكم باللوحة الجانبية
 
   const submit = async (e) => {
     e.preventDefault();
@@ -22,6 +23,7 @@ export default function UsersPage() {
     try {
       await registerUser(form);
       setForm(initial);
+      setShowPanel(false); // إخفاء اللوحة بعد الإضافة
       openModal({
         title: "Success",
         message: "User created successfully.",
@@ -41,60 +43,131 @@ export default function UsersPage() {
   };
 
   return (
-    <div className="grid">
+    <div className="grid" style={{ position: "relative" }}>
       <h2 style={{ margin: 0 }}>Users</h2>
-      <form className="card grid two" onSubmit={submit}>
-        <div>
-          <label>Username</label>
-          <input
-            value={form.username}
-            onChange={(e) => setForm((p) => ({ ...p, username: e.target.value }))}
-            required
-          />
-        </div>
-        <div>
-          <label>Email</label>
-          <input
-            type="email"
-            value={form.email}
-            onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
-            required
-          />
-        </div>
-        <div>
-          <label>Password</label>
-          <input
-            type="password"
-            value={form.password}
-            onChange={(e) => setForm((p) => ({ ...p, password: e.target.value }))}
-            required
-          />
-        </div>
-        <div>
-          <label>Role</label>
-          <select
-            value={form.role}
-            onChange={(e) => setForm((p) => ({ ...p, role: e.target.value }))}
-          >
-            <option value="ADMIN">ADMIN</option>
-            <option value="FACTORY_MANAGER">FACTORY_MANAGER</option>
-            <option value="SECURITY">SECURITY</option>
-            <option value="SAFETY">SAFETY</option>
-          </select>
-        </div>
-        <div>
-          <label>Worker ID (optional)</label>
-          <input
-            value={form.workerID}
-            onChange={(e) => setForm((p) => ({ ...p, workerID: e.target.value }))}
-          />
-        </div>
-        <div style={{ alignSelf: "end" }}>
-          <button type="submit" disabled={busy}>
-            {busy ? "Creating..." : "Create User"}
-          </button>
-        </div>
-      </form>
+
+      {/* زر Add User أعلى يمين الشاشة */}
+      <button
+        onClick={() => setShowPanel(true)}
+        style={{
+          position: "fixed",
+          top: "20px",
+          right: "20px",
+          padding: "10px 20px",
+          background: "#4e7ea3",
+          color: "#fff",
+          border: "none",
+          borderRadius: "5px",
+          cursor: "pointer",
+          zIndex: 1001
+        }}
+      >
+        Add User
+      </button>
+
+      {/* overlay خلف اللوحة */}
+      {showPanel && (
+        <div
+          onClick={() => setShowPanel(false)}
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            background: "rgba(0,0,0,0.3)",
+            zIndex: 1000
+          }}
+        ></div>
+      )}
+
+      {/* اللوحة الجانبية */}
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          right: showPanel ? 0 : "-400px",
+          width: "400px",
+          height: "100%",
+          background: "#fff",
+          boxShadow: "-2px 0 8px rgba(0,0,0,0.3)",
+          padding: "20px",
+          transition: "right 0.3s ease",
+          zIndex: 1002
+        }}
+      >
+        <button
+          onClick={() => setShowPanel(false)}
+          style={{
+            position: "absolute",
+            top: "10px",
+            right: "10px",
+            background: "transparent",
+            border: "none",
+            fontSize: "18px",
+            cursor: "pointer"
+          }}
+        >
+          ✖
+        </button>
+
+        <h3>Add User</h3>
+
+        <form className="grid two" onSubmit={submit}>
+          <div>
+            <label>Username</label>
+            <input
+              value={form.username}
+              onChange={(e) => setForm((p) => ({ ...p, username: e.target.value }))}
+              required
+            />
+          </div>
+          <div>
+            <label>Email</label>
+            <input
+              type="email"
+              value={form.email}
+              onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
+              required
+            />
+          </div>
+          <div>
+            <label>Password</label>
+            <input
+              type="password"
+              value={form.password}
+              onChange={(e) => setForm((p) => ({ ...p, password: e.target.value }))}
+              required
+            />
+          </div>
+          <div>
+            <label>Role</label>
+            <select
+              value={form.role}
+              onChange={(e) => setForm((p) => ({ ...p, role: e.target.value }))}
+            >
+              <option value="ADMIN">ADMIN</option>
+              <option value="FACTORY_MANAGER">FACTORY_MANAGER</option>
+              <option value="SECURITY">SECURITY</option>
+              <option value="SAFETY">SAFETY</option>
+            </select>
+          </div>
+          <div>
+            <label>Worker ID (optional)</label>
+            <input
+              value={form.workerID}
+              onChange={(e) => setForm((p) => ({ ...p, workerID: e.target.value }))}
+            />
+          </div>
+          <div style={{ alignSelf: "end", gridColumn: "1 / -1" }}>
+            <button type="submit" disabled={busy} style={{ width: "100%" }}>
+              {busy ? "Creating..." : "Create User"}
+            </button>
+          </div>
+        </form>
+      </div>
+
+      {/* جدول المستخدمين */}
       <div className="card">
         {loading ? <p>Loading users...</p> : null}
         {error ? <p>{error}</p> : null}
