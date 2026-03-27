@@ -1,12 +1,22 @@
 const connectDB = require("./configDB");
 const express = require("express");
 const path = require("path");
-require("dotenv").config();
+require("dotenv").config({ path: "../.env" });
 const app = express();
+
+// أي طلب للرابط /set-password يفتح الصفحة الصحيحة
+app.get("/set-password", (req, res) => {
+  console.log("Serving set-password.html, token:", req.query.token);
+  res.sendFile(path.join(__dirname, "../FrontEnd/public/set-password.html"));
+});
+// test route
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "../FrontEnd/public/index.html"));
+});
 
 // middleware
 app.use(express.json());
-app.use(express.static(path.join(__dirname, "../frontend/public")));
+app.use(express.static(path.join(__dirname, "../FrontEnd/public")));
 
 //DB
 connectDB();
@@ -40,10 +50,6 @@ app.use("/api/workers", workerRoutes);
 app.use("/api/factories", factoryRoutes);
 app.use("/api/auth", authRoutes);
 
-// test route
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "../FrontEnd/public/index.html"));
-});
 
 // start server
 app.listen(3000, () => {

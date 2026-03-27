@@ -3,13 +3,19 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 
-// ================= REGISTER =================
+// ================= REGISTER (ADMIN ONLY) =================
 const register = async (req, res) => {
   try {
-    const { username, email, role, workerID } = req.body;
+    const { username, email, password, role, workerID } = req.body;
 
-    if (!username || !email ) {
-      return res.status(400).json({ error: "Username, email, are required" });
+    // 🔴 تحقق
+    if (!username || !email || !password) {
+      return res.status(400).json({ error: "Username, email, password are required" });
+    }
+
+    // 🔴 فقط الادمن
+    if (req.user.role !== "ADMIN") {
+      return res.status(403).json({ error: "Only admin can create users" });
     }
 
     const existingUser = await User.findOne({ $or: [{ email }, { username }] });
@@ -17,26 +23,24 @@ const register = async (req, res) => {
       return res.status(400).json({ error: "Username or email already in use" });
     }
 
-    const salt = await bcrypt.genSalt(10);
-    //const hashedPassword = await bcrypt.hash(password, salt);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = new User({
       username: username.trim(),
       email,
-      //password: hashedPassword,
-      role,
+      password: hashedPassword,
+      role: role || "SECURITY", // default
       workerID: workerID || null,
-      factory: req.user?.factory || null, // حماية إذا ما في req.user
+      factory: req.user.factory || null,
+      mustChangePassword: true,
     });
-    
-    const crypto = require("crypto");
-    const token = crypto.randomBytes(32).toString("hex");
-    newUser.verificationToken = token;
-    newUser.verificationTokenExpires = Date.now() + 3600000;
 
     await newUser.save();
 
-    res.status(201).json({ message: "User registered successfully",verificationToken: token });
+    res.status(201).json({
+      message: "User created successfully",
+    });
+
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -57,14 +61,23 @@ const login = async (req, res) => {
       return res.status(401).json({ error: "Invalid credentials" });
     }
 
-    // 🔴 مهم: إذا المستخدم لسا ما حط باسورد
-    if (!user.password) {
-      return res.status(403).json({ error: "Please set your password first" });
-    }
-
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(401).json({ error: "Invalid credentials" });
+    }
+
+    // 🔥 أول مرة
+    if (user.mustChangePassword) {
+      const tempToken = jwt.sign(
+        { id: user._id },
+        process.env.JWT_SECRET,
+        { expiresIn: "1h" }
+      );
+
+      return res.status(403).json({
+        message: "You must change your password first",
+        tempToken,
+      });
     }
 
     const token = jwt.sign(
@@ -81,15 +94,32 @@ const login = async (req, res) => {
     res.status(200).json({
       message: "Login successful",
       token,
-      user: {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-        role: user.role,
-        workerID: user.workerID,
-        factory: user.factory,
-      },
     });
+
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
+// ================= CHANGE PASSWORD =================
+const changePassword = async (req, res) => {
+  try {
+    const { newPassword } = req.body;
+
+    if (!newPassword) {
+      return res.status(400).json({ error: "New password required" });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await User.findByIdAndUpdate(req.user.id, {
+      password: hashedPassword,
+      mustChangePassword: false,
+    });
+
+    res.status(200).json({ message: "Password updated successfully" });
+
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -100,43 +130,7 @@ const login = async (req, res) => {
 const getMe = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select("-password");
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
     res.status(200).json(user);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-
-// ================= SET PASSWORD (🔥 الجديد) =================
-const setPasswordController = async (req, res) => {
-  try {
-    const { token, password } = req.body;
-
-    if (!token || !password) {
-      return res.status(400).json({ error: "Token and password are required" });
-    }
-
-    const user = await User.findOne({
-      verificationToken: token,
-      verificationTokenExpires: { $gt: Date.now() },
-    });
-
-    if (!user) {
-      return res.status(400).json({ error: "Invalid or expired token" });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    user.password = hashedPassword;
-    user.verificationToken = undefined;
-    user.verificationTokenExpires = undefined;
-
-    await user.save();
-
-    res.status(200).json({ message: "Password set successfully" });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -147,5 +141,5 @@ module.exports = {
   register,
   login,
   getMe,
-  setPasswordController, 
+  changePassword,
 };

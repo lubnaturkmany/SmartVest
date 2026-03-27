@@ -9,12 +9,11 @@ const protect = async (req, res, next) => {
     console.log("header:", authHeader);
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      console.log("no token", token);
       return res.status(401).json({ error: "No token provided" });
     }
 
     const token = authHeader.split(" ")[1];
-    console.log("token");
+    console.log("token", token);
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     console.log("decoded" , decoded);
 
@@ -34,9 +33,17 @@ const protect = async (req, res, next) => {
 // Checks if user has one of the allowed roles
 const authorizeRoles = (...roles) => {
   return (req, res, next) => {
-    console.log("USER ROLE:" , req.user?.role);
-    console.log("REQUIRED ROLES:" , roles);
-    if (!req.user || !roles.includes(req.user.role.toUpperCase())) {
+    if (!req.user) {
+      return res.status(401).json({ error: "User not authenticated" });
+    }
+
+    const userRole = req.user.role?.toUpperCase();
+    const allowedRoles = roles.map(r => r.toUpperCase());
+
+    console.log("USER ROLE:", userRole);
+    console.log("ALLOWED ROLES:", allowedRoles);
+
+    if (!allowedRoles.includes(userRole)) {
       return res.status(403).json({ error: "Access denied" });
     }
     next();

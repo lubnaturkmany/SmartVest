@@ -1,67 +1,57 @@
-require("dotenv").config();
+require("dotenv").config({ path: "../.env" });
 const mongoose = require("mongoose");
-const crypto = require("crypto");
+const bcrypt = require("bcryptjs");
 const User = require("./models/user");
-const nodemailer = require("nodemailer");
 
-const MONGO_URI = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/smartvest";
+const MONGO_URI = process.env.MONGO_URI;
 
-// بيانات أول أدمن بدون باسورد
+if (!MONGO_URI) {
+  console.error("❌ MONGO_URI غير موجودة في .env");
+  process.exit(1);
+}
+
+// بيانات أول Admin
 const firstAdmin = {
-  username: "admin_main",
-  email: "admin@factory.com",
+  username: "LubnaTurkmani",
+  email: "lubnaturk@test.com",
+  password: "123456", // 🔥 تقدري تغيريه
   role: "ADMIN",
-  factory: null, // لو عندك مصنع محدد
+  factory: null,
 };
 
 async function createFirstAdmin() {
   try {
     await mongoose.connect(MONGO_URI);
-    console.log("Connected to DB");
+    console.log("✅ Connected to MongoDB");
 
     const existing = await User.findOne({ email: firstAdmin.email });
     if (existing) {
-      console.log("Admin already exists!");
+      console.warn("⚠️ Admin already exists!");
       process.exit(0);
     }
 
-    // إنشاء رمز تحقق مؤقت
-    const token = crypto.randomBytes(32).toString("hex");
-    const tokenExpires = Date.now() + 1000 * 60 * 60; // صلاحية ساعة
+    // 🔐 تشفير الباسورد
+    const hashedPassword = await bcrypt.hash(firstAdmin.password, 10);
 
     const newAdmin = new User({
-      ...firstAdmin,
-      verificationToken: token,
-      verificationTokenExpires: tokenExpires,
+      username: firstAdmin.username,
+      email: firstAdmin.email,
+      password: hashedPassword,
+      role: "ADMIN",
+      factory: null,
+      mustChangePassword: false, // 🔥 مهم
     });
 
     await newAdmin.save();
 
-    // إعداد البريد
-    /*const transporter = nodemailer.createTransport({
-      host: "smtp.mailtrap.io", //  صالح SMTP استخدمي
-      port: 587,
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-    });*/
+    console.log("🔥 Admin created successfully!");
+    console.log("📧 Email:", firstAdmin.email);
+    console.log("🔑 Password:", firstAdmin.password);
 
-    const verificationUrl = `https://your-frontend.com/set-password?token=${token}`;
-
-   /* await transporter.sendMail({
-      from: '"SmartVest" <no-reply@smartvest.com>',
-      to: firstAdmin.email,
-      subject: "Activate your Admin account",
-      html: `<p>Welcome! Click the link below to set your password and activate your Admin account:</p>
-             <a href="${verificationUrl}">Set Password</a>
-             <p>This link expires in 1 hour.</p>`,
-    });*/
-
-    console.log("First Admin created and email sent!");
     process.exit(0);
+
   } catch (err) {
-    console.error(err);
+    console.error("❌ Error:", err.message);
     process.exit(1);
   }
 }
