@@ -5,7 +5,7 @@ const { register, login, getMe, changePassword } = require("../controllers/authC
 const { protect, authorizeRoles } = require("../middleware/authMiddleware");
 
 // 🟢 ADMIN creates users
-router.post("/register", protect, authorizeRoles("ADMIN"), register);
+router.post("/register", protect, authorizeRoles("ADMIN" , "FACTORY_MANAGER"), register);
 
 // 🟢 login
 router.post("/login", login);

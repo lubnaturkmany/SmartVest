@@ -24,7 +24,7 @@ const userSchema = new mongoose.Schema(
 
     role: {
       type: String,
-      enum: ["ADMIN", "SECURITY", "SAFETY"],
+      enum: ["ADMIN","FACTORY_MANAGER", "SECURITY", "SAFETY"],
       default: "SECURITY", // 🟢 default آمن
     },
 

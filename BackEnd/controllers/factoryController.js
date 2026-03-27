@@ -21,7 +21,9 @@ const createFactory = async (req, res) => {
 
     const factory = new Factory({
       name,
-      zones: zones || []
+      zones: zones || [],
+      createdBy: req.user._id,
+      isConfigured: false,
     });
 
     await factory.save();

@@ -1,4 +1,5 @@
 const User = require("../models/user");
+const Factory = require("../models/factory");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
@@ -14,8 +15,14 @@ const register = async (req, res) => {
     }
 
     // 🔴 فقط الادمن
-    if (req.user.role !== "ADMIN") {
+    if (!req.user.role || req.user.role !== "ADMIN") {
       return res.status(403).json({ error: "Only admin can create users" });
+    }
+
+      // ✅ التحقق من صحة الدور
+    const validRoles = ["ADMIN", "FACTORY_MANAGER", "SECURITY", "SAFETY"];
+    if (!validRoles.includes(role)) {
+      return res.status(400).json({ error: "Invalid role" });
     }
 
     const existingUser = await User.findOne({ $or: [{ email }, { username }] });
@@ -25,13 +32,26 @@ const register = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // ✅ إنشاء مصنع تلقائي للمدير فقط
+    let factoryId = null;
+    if (role === "FACTORY_MANAGER") {
+      const factory = new Factory({
+        name: `${username}'s Factory`,
+        createdBy: req.user._id,
+        zones: [],
+        isConfigured: false,
+      });
+      await factory.save();
+      factoryId = factory._id;
+    }
+
     const newUser = new User({
       username: username.trim(),
       email,
       password: hashedPassword,
       role: role || "SECURITY", // default
       workerID: workerID || null,
-      factory: req.user.factory || null,
+      factory: role === "FACTORY_MANAGER" ? factoryId : req.user.factory || null,
       mustChangePassword: true,
     });
 
