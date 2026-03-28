@@ -67,21 +67,31 @@ export default function LoginPage() {
   if (user) return <Navigate to="/dashboard" replace />;
 
   const submit = async (e) => {
-    e.preventDefault();
-    setBusy(true);
-    try {
-      await login(form.email, form.password);
-    } catch (err) {
-      openModal({
-        title: "Login failed",
-        message: err.message,
-        confirmText: "Close",
-        hideCancel: true
-      });
-    } finally {
-      setBusy(false);
+  e.preventDefault();
+  setBusy(true);
+  try {
+    const result = await login(form.email, form.password);
+
+    if (result.mustChangePassword) {
+      // نوجه المستخدم لصفحة تغيير الباسورد مع التوكن في الرابط
+      const tempToken = localStorage.getItem("sv_temp_token");
+       navigate(`/change-password?token=${localStorage.getItem("sv_temp_token")}`);
+      return;
     }
-  };
+
+    // تسجيل دخول عادي
+    navigate("/dashboard");
+  } catch (err) {
+    openModal({
+      title: "Login failed",
+      message: err.message,
+      confirmText: "Close",
+      hideCancel: true
+    });
+  } finally {
+    setBusy(false);
+  }
+};
 
   return (
     <div className="login-screen-v2">
@@ -89,7 +99,7 @@ export default function LoginPage() {
         <div className="login-cloud-inner">
           <div className="login-cloud-left">
             <h1 className="login-hello">Hello!</h1>
-            <p className="login-sub">Sign in to your account</p>
+            <p className="login-sub">Login in to your account</p>
             <form className="login-form-v2" onSubmit={submit}>
               <label className="login-field">
                 <span className="login-field-icon" aria-hidden>
@@ -152,26 +162,9 @@ export default function LoginPage() {
                 </button>
               </div>
               <button type="submit" className="login-signin-btn" disabled={busy}>
-                {busy ? "Signing in..." : "SIGN IN"}
+                {busy ? "Signing in..." : "LOGIN"}
               </button>
             </form>
-            <p className="login-create-line">
-              Don&apos;t have an account?{" "}
-              <button
-                type="button"
-                className="login-create-link"
-                onClick={() =>
-                  openModal({
-                    title: "Create account",
-                    message: "Please contact your administrator to create an account.",
-                    confirmText: "OK",
-                    hideCancel: true
-                  })
-                }
-              >
-                Create
-              </button>
-            </p>
           </div>
           <div className="login-cloud-right">
             <h2 className="login-brand-title">Smart Safety System</h2>

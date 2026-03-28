@@ -10,6 +10,7 @@ import UsersPage from "./pages/UsersPage";
 import LoginPage from "./pages/LoginPage";
 import { useAuth } from "./hooks/useAuth";
 import { useDangerAlerts } from "./hooks/useDangerAlerts";
+import ChangePasswordPage from "./pages/ChangePasswordPage";
 
 function AppShell() {
   useDangerAlerts(true);
@@ -22,6 +23,7 @@ function AppShell() {
         <Route path="/alerts" element={<AlertsPage />} />
         <Route path="/factories" element={<FactoriesPage />} />
         <Route path="/users" element={<UsersPage />} />
+        <Route path="/change-password" element={<ChangePasswordPage />} />
       </Routes>
     </AppLayout>
   );
