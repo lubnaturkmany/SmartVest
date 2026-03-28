@@ -2,6 +2,7 @@ const User = require("../models/user");
 const Factory = require("../models/factory");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const { error } = require("node:console");
 
 
 // ================= REGISTER (ADMIN ONLY) =================
@@ -94,7 +95,7 @@ const login = async (req, res) => {
         { expiresIn: "1h" }
       );
 
-      return res.status(403).json({
+      return res.status(200).json({
         message: "You must change your password first",
         tempToken,
       });
@@ -125,23 +126,31 @@ const login = async (req, res) => {
 // ================= CHANGE PASSWORD =================
 const changePassword = async (req, res) => {
   try {
-    const { newPassword } = req.body;
+    const { token ,newPassword } = req.body;
 
-    if (!newPassword) {
-      return res.status(400).json({ error: "New password required" });
+    if ( !token || !newPassword) {
+      return res.status(400).json({ error: "Token and New password required" });
     }
 
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user= await User.factoryId(decoded.id);
+    if (!user) return res.status(404).json({ error: "User not found"});
+    
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-    await User.findByIdAndUpdate(req.user.id, {
-      password: hashedPassword,
-      mustChangePassword: false,
-    });
+    user.password = hashedPassword;
+    await user.save();
 
-    res.status(200).json({ message: "Password updated successfully" });
+    const newToken= jwt.sign(
+      { id: user._id, role:user.role},
+      process.env.JWT_SECRET,
+      {expiresIn:" 1h "}
+    );
+
+    res.json({ message: "Password updated successfully", token:newToken });
 
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(400).json({ error: "Invalid or expired token" });
   }
 };
 

@@ -7,6 +7,7 @@ export default function DashboardPage() {
   const { workers } = useWorkers();
   const { alerts } = useAlerts();
 
+  // نحسب بيانات حالة العمال لكل نوع
   const statusData = useMemo(() => {
     const dangerWorkerIDs = new Set(
       alerts.filter((a) => a.type === "Danger").map((a) => a.workerID)
@@ -37,21 +38,34 @@ export default function DashboardPage() {
   }, [workers, alerts]);
 
   return (
-    <div className="grid">
-      <div className="top-bar">
-        <h2 style={{ margin: 0 }}>Dashboard</h2>
-      </div>
-      <div className="grid two">
-        <div className="card">
-          <h3>Total Workers</h3>
-          <p style={{ fontSize: 28, margin: 0 }}>{workers.length}</p>
-        </div>
-        <div className="card">
-          <h3>Total Alerts</h3>
-          <p style={{ fontSize: 28, margin: 0 }}>{alerts.length}</p>
-        </div>
-      </div>
-      <WorkerStatusChart data={statusData} workerCount={workers.length} />
+    <div className="dashboard-full">
+  <div className="grid">
+    {/* Top bar */}
+    <div className="top-bar">
+      <h2 style={{ margin: 0 }}>Dashboard</h2>
     </div>
+
+    {/* Cards */}
+    <div className="grid two">
+      <div className="card">
+        <h3>Total Workers</h3>
+        <p style={{ fontSize: 28, margin: 0 }}>{workers.length}</p>
+      </div>
+      <div className="card">
+        <h3>Total Alerts</h3>
+        <p style={{ fontSize: 28, margin: 0 }}>{alerts.length}</p>
+      </div>
+    </div>
+
+    {/* Worker status chart */}
+    <div className="dashboard-chart-card">
+      <WorkerStatusChart
+      data={statusData}
+      workerCount={workers.length}
+      style={{ height: '150px' }}  // طول أقل
+      />
+    </div>
+  </div>
+</div>
   );
 }

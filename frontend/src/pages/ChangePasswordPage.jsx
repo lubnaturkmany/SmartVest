@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
+import { apiClient } from "../lib/apiClient";
 
 export default function ChangePasswordPage() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
-  
-   const token = params.get("token"); // ناخد التوكن من الرابط
+
+  const token = params.get("token");
 
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -19,41 +20,36 @@ export default function ChangePasswordPage() {
     setSuccess("");
 
     if (!password || !confirm) {
-      setError("Please fill in both fields");
+      setError("Please fill in both fields.");
       return;
     }
+
     if (password !== confirm) {
-      setError("Passwords do not match");
+      setError("Passwords do not match.");
       return;
     }
 
     setBusy(true);
 
     try {
-      const res = await fetch("http://localhost:3000/api/auth/change-password", {
-        method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}` 
-        },
-        body: JSON.stringify({ newPassword: password })
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.error || "Failed to change password");
-      } else {
-        // نخزن التوكن النهائي ونروح للداشبورد
-        if (data.token) {
-          localStorage.setItem("sv_token", data.token);
-          localStorage.removeItem("sv_temp_token");
+      const res = await apiClient.post(
+        "/api/auth/change-password",
+        { newPassword: password },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
-        setSuccess(data.message || "Password changed successfully!");
-        setTimeout(() => navigate("/dashboard"), 1500);
-      }
+      );
+
+      setSuccess(res.message || "Password changed successfully!");
+
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 1500);
+
     } catch (err) {
-      setError("Could not reach server.");
+      setError(err.message || "Failed to change password.");
     } finally {
       setBusy(false);
     }
@@ -62,33 +58,113 @@ export default function ChangePasswordPage() {
   if (!token) return <div style={{ padding: 40 }}>Invalid or missing token</div>;
 
   return (
-    <div style={{ display: "flex", justifyContent: "center", marginTop: "100px" }}>
-      <form onSubmit={submit} style={{ width: "300px", background: "rgba(0,0,0,0.6)", padding: 20, borderRadius: 15, color: "#fff" }}>
-        <h2>Change Password</h2>
+    <>
+      {/* 🔥 CSS نفس تبعك */}
+      <style>{`
+        body {
+          font-family: 'DM Sans', sans-serif;
+          background: linear-gradient(135deg, #0a3d62, #3c6382);
+          margin: 0;
+          color: #f0f0f0;
+          height: 100vh;
+          overflow: hidden;
+          padding: 50px 0;
+          position: relative;
+        }
 
-        <input
-          type="password"
-          placeholder="New Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          style={{ width: "100%", marginBottom: 10, padding: 8, borderRadius: 8 }}
-        />
+        .cp-container {
+          background: rgba(0, 0, 0, 0.6);
+          padding: 2.5rem;
+          border-radius: 15px;
+          width: 100%;
+          max-width: 420px;
+          box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+          text-align: center;
+          margin: 0 auto;
+          position: relative;
+        }
 
-        <input
-          type="password"
-          placeholder="Confirm Password"
-          value={confirm}
-          onChange={(e) => setConfirm(e.target.value)}
-          style={{ width: "100%", marginBottom: 10, padding: 8, borderRadius: 8 }}
-        />
+        .cp-helmet {
+          font-size: 3rem;
+          margin-bottom: 0.5rem;
+          color: #f39c12;
+        }
 
-        <button disabled={busy} style={{ width: "100%", padding: 10, background: "#f1c40f", color: "#0a3d62", border: "none", borderRadius: 8 }}>
-          {busy ? "Saving..." : "Change Password"}
-        </button>
+        .cp-title {
+          margin-bottom: 1.5rem;
+          font-weight: 700;
+          color: #f1c40f;
+        }
 
-        {error && <p style={{ color: "red" }}>{error}</p>}
-        {success && <p style={{ color: "green" }}>{success}</p>}
-      </form>
-    </div>
+        .cp-label {
+          display: block;
+          margin: 0.5rem 0 0.25rem;
+          text-align: left;
+        }
+
+        .cp-input {
+          width: 100%;
+          padding: 0.85rem;
+          margin-bottom: 1rem;
+          border-radius: 10px;
+          border: 1px solid rgba(255,255,255,0.2);
+          background: rgba(255,255,255,0.05);
+          color: #fff;
+        }
+
+        .cp-input:focus {
+          outline: none;
+          border-color: #f1c40f;
+        }
+
+        .cp-btn {
+          width: 100%;
+          padding: 1rem;
+          background: #f1c40f;
+          color: #0a3d62;
+          border: none;
+          border-radius: 10px;
+          font-weight: bold;
+          cursor: pointer;
+        }
+
+        .cp-btn:hover {
+          background: #f39c12;
+        }
+
+        .cp-error { color: #e74c3c; }
+        .cp-success { color: #2ecc71; }
+      `}</style>
+
+      <div className="cp-container">
+        <div className="cp-helmet">🦺</div>
+        <h1 className="cp-title">Change Your Password</h1>
+
+        <form onSubmit={submit}>
+          <label className="cp-label">New Password</label>
+          <input
+            className="cp-input"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+
+          <label className="cp-label">Confirm Password</label>
+          <input
+            className="cp-input"
+            type="password"
+            value={confirm}
+            onChange={(e) => setConfirm(e.target.value)}
+          />
+
+          <button className="cp-btn" disabled={busy}>
+            {busy ? "Saving..." : "Change Password"}
+          </button>
+
+          {error && <p className="cp-error">{error}</p>}
+          {success && <p className="cp-success">{success}</p>}
+        </form>
+      </div>
+    </>
   );
 }

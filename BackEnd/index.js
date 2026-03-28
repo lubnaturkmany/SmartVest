@@ -4,23 +4,12 @@ const path = require("path");
 const fs = require("fs");
 const cors = require("cors"); 
 require("dotenv").config({ path: "../.env" });
+
 const app = express();
 
+// paths
 const publicDir = path.join(__dirname, "../FrontEnd/dist");
-//const setPasswordFile = path.join(__dirname, "../FrontEnd/public/change-password.html");
 const indexFile = path.join(publicDir, "index.html");
-
-app.get("*", (req, res) => {
-  res.sendFile(indexFile); // index.html الخاص بالـ React app
-})
-
-// test route
-app.get("/", (req, res) => {
-  if (!fs.existsSync(indexFile)) {
-    return res.json({ message: "SmartVest backend is running" });
-  }
-  res.sendFile(indexFile);
-});
 
 // middleware
 app.use(cors({
@@ -28,18 +17,21 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json());
+
+// static files
 if (fs.existsSync(publicDir)) {
   app.use(express.static(publicDir));
 }
 
-//DB
+// DB
 connectDB();
 
+// rate limit
 const rateLimit = require("express-rate-limit");
-//  spam الحماية من 
+
 const sensorLimiter = rateLimit({
-  windowMs: 60 * 1000, // دقيقة
-  max: 100, // 100 request بالدقيقة
+  windowMs: 60 * 1000,
+  max: 100,
   message: "Too many sensor requests. Try again later."
 });
 
@@ -55,15 +47,21 @@ const alertRoutes = require("./routes/alertRoutes");
 const workerRoutes = require("./routes/workerRoutes");
 const authRoutes = require("./routes/authRoutes");
 const factoryRoutes = require("./routes/factoryRoutes");
-//const verifyApiKey = require("./middleware/apiKeyMiddleware");
 
 app.use("/api/sensor-data", sensorLimiter, sensorRoutes);
-//app.use("/api/auth/login", authLimiter, authRoutes);
 app.use("/api/alerts", alertRoutes);
 app.use("/api/workers", workerRoutes);
 app.use("/api/factories", factoryRoutes);
 app.use("/api/auth", authRoutes);
 
+// test route 
+app.get("/test", (req, res) => {
+  res.json({ message: "SmartVest backend is running" });
+});
+
+app.get(/.*/, (req, res) => {
+  res.sendFile(indexFile);
+});
 
 // start server
 app.listen(3000, () => {

@@ -35,8 +35,45 @@ a {
 .sidebar {
   background: #d7eeff;
   border-right: 1px solid var(--line);
-  padding: 20px 14px;
+  padding: 10px 12px;
 }
+
+.dashboard-full {
+  height: 100vh;          /* كامل ارتفاع الشاشة */
+  overflow: hidden;       /* يمنع السكرول */
+  display: flex;
+  flex-direction: column;
+  padding: 8px;
+}
+
+.grid {
+  display: grid;
+  gap: 10px;
+  width: 100%;
+}
+
+.grid.two {
+  grid-template-columns: repeat(auto-fit, minmax(50px, 0.5fr)); /* يخلي الأعمدة تتقلص لو ضاقت الشاشة */
+  gap: 10px;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 1px;
+  padding: 10px;
+  box-shadow: 0 4px 16px rgba(78, 126, 163, 0.1);
+  min-width: 0; /* مهم لتجنب overflow */
+  min-height: 100px;
+}
+
+.dashboard-chart-card {
+  min-height: 100px;
+  width: 100%;
+  max-width: 100%; /* يمنع تجاوز حجم الشاشة */
+  overflow-x: auto; /* لو كان الرسم كبير شوي، يظهر scroll داخلي فقط */
+}
+
 
 .brand {
   font-size: 20px;

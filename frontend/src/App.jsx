@@ -25,7 +25,6 @@ function AppShell() {
         <Route path="/factories" element={<FactoriesPage />} />
         <Route path="/zones" element={<ZonesPage />} />
         <Route path="/users" element={<UsersPage />} />
-        <Route path="/change-password" element={<ChangePasswordPage />} />
       </Routes>
     </AppLayout>
   );
@@ -36,6 +35,8 @@ export default function App() {
     <>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+
+        <Route path="/change-password" element={<ChangePasswordPage />} />
         <Route
           path="/*"
           element={

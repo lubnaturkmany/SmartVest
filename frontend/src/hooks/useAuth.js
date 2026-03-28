@@ -26,17 +26,17 @@ const login = async (email, password) => {
   const data = await apiClient.post("/api/auth/login", { email, password });
 
   // إذا السيرفر رجع tempToken => المستخدم لازم يغير الباسورد
-  if (data.tempToken) {
-    localStorage.setItem("sv_temp_token", data.tempToken);
-    return { mustChangePassword: true };
-  }
+if (data.tempToken) {
+  localStorage.setItem("sv_temp_token", data.tempToken); 
+  return { mustChangePassword: true, token: data.tempToken };
+}
 
   // تسجيل دخول طبيعي
   authStorage.setToken(data.token);
   const current = await apiClient.get("/api/auth/me");
   setUser(current);
 
-  return { mustChangePassword: false };
+  return { mustChangePassword: false, token: data.token };
 };
 
   const logout = () => {

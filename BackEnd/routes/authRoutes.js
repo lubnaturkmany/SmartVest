@@ -14,6 +14,6 @@ router.post("/login", login);
 router.get("/me", protect, getMe);
 
 // 🟢 change password (first time or later)
-router.post("/change-password", protect, changePassword);
+router.post("/change-password", changePassword);
 
 module.exports = router;

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useModal } from "../hooks/useModal";
 
@@ -59,6 +59,8 @@ function IconEyeOn() {
 export default function LoginPage() {
   const { user, login } = useAuth();
   const { openModal } = useModal();
+  const navigate = useNavigate(); 
+
   const [form, setForm] = useState({ email: "", password: "" });
   const [remember, setRemember] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -67,31 +69,33 @@ export default function LoginPage() {
   if (user) return <Navigate to="/dashboard" replace />;
 
   const submit = async (e) => {
-  e.preventDefault();
-  setBusy(true);
-  try {
-    const result = await login(form.email, form.password);
+    e.preventDefault();
+    setBusy(true);
 
-    if (result.mustChangePassword) {
-      // نوجه المستخدم لصفحة تغيير الباسورد مع التوكن في الرابط
-      const tempToken = localStorage.getItem("sv_temp_token");
-       navigate(`/change-password?token=${localStorage.getItem("sv_temp_token")}`);
-      return;
+    try {
+      const result = await login(form.email, form.password);
+
+      // ✅  للتحويل لصفحة تغيير الباسورد
+      if (result.mustChangePassword) {
+        navigate(`/change-password?token=${result.token}`);
+        return; // ⚡ يمنع تنفيذ navigate("/dashboard") بعدين
+      }
+
+      // تسجيل دخول عادي
+      navigate("/dashboard");
+
+    } catch (err) {
+      // ✅ استبدلت setError بعرض مودال
+      openModal({
+        title: "Login failed",
+        message: err.message,
+        confirmText: "Close",
+        hideCancel: true
+      });
+    } finally {
+      setBusy(false);
     }
-
-    // تسجيل دخول عادي
-    navigate("/dashboard");
-  } catch (err) {
-    openModal({
-      title: "Login failed",
-      message: err.message,
-      confirmText: "Close",
-      hideCancel: true
-    });
-  } finally {
-    setBusy(false);
-  }
-};
+  };
 
   return (
     <div className="login-screen-v2">
@@ -115,6 +119,7 @@ export default function LoginPage() {
                   required
                 />
               </label>
+
               <label className="login-field">
                 <span className="login-field-icon" aria-hidden>
                   <IconLock />
@@ -137,6 +142,7 @@ export default function LoginPage() {
                   {showPassword ? <IconEyeOn /> : <IconEyeOff />}
                 </button>
               </label>
+
               <div className="login-row-options">
                 <label className="login-remember">
                   <input
@@ -161,11 +167,13 @@ export default function LoginPage() {
                   Forgot password?
                 </button>
               </div>
+
               <button type="submit" className="login-signin-btn" disabled={busy}>
                 {busy ? "Signing in..." : "LOGIN"}
               </button>
             </form>
           </div>
+
           <div className="login-cloud-right">
             <h2 className="login-brand-title">Smart Safety System</h2>
           </div>
