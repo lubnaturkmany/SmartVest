@@ -6,6 +6,7 @@ import DashboardPage from "./pages/DashboardPage";
 import WorkersPage from "./pages/WorkersPage";
 import AlertsPage from "./pages/AlertsPage";
 import FactoriesPage from "./pages/FactoriesPage";
+import ZonesPage from "./pages/ZonesPage";
 import UsersPage from "./pages/UsersPage";
 import LoginPage from "./pages/LoginPage";
 import { useAuth } from "./hooks/useAuth";
@@ -21,6 +22,7 @@ function AppShell() {
         <Route path="/workers" element={<WorkersPage />} />
         <Route path="/alerts" element={<AlertsPage />} />
         <Route path="/factories" element={<FactoriesPage />} />
+        <Route path="/zones" element={<ZonesPage />} />
         <Route path="/users" element={<UsersPage />} />
       </Routes>
     </AppLayout>
