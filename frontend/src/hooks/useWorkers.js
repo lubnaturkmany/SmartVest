@@ -6,6 +6,7 @@ export function useWorkers() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // 🔄 جلب العمال من السيرفر
   const loadWorkers = useCallback(async () => {
     setLoading(true);
     setError("");
@@ -19,20 +20,33 @@ export function useWorkers() {
     }
   }, []);
 
+  // تحميل أولي
   useEffect(() => {
     loadWorkers();
   }, [loadWorkers]);
 
+  // ➕ إضافة عامل
   const addWorker = async (payload) => {
-    const data = await apiClient.post("/api/workers", payload);
-    setWorkers((prev) => [data.worker, ...prev]);
-    return data;
+    await apiClient.post("/api/workers", payload);
+
+    // 🔥 بعد الإضافة → نجيب البيانات من السيرفر مباشرة
+    await loadWorkers();
   };
 
+  // ❌ حذف عامل
   const deleteWorker = async (workerID) => {
     await apiClient.delete(`/api/workers/${workerID}`);
-    setWorkers((prev) => prev.filter((w) => w.workerID !== workerID));
+
+    // 🔥 بعد الحذف → تحديث البيانات
+    await loadWorkers();
   };
 
-  return { workers, loading, error, loadWorkers, addWorker, deleteWorker };
+  return {
+    workers,
+    loading,
+    error,
+    loadWorkers,
+    addWorker,
+    deleteWorker
+  };
 }

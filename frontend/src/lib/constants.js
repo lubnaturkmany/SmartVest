@@ -5,5 +5,7 @@ export const navItems = [
   { to: "/workers", label: "Workers" },
   { to: "/alerts", label: "Alerts" },
   { to: "/factories", label: "Factories" },
+   { to: "/zones", label: "Zones" },
+  
   { to: "/users", label: "Users" }
 ];
