@@ -1,9 +1,10 @@
+const mongoose = require("mongoose");
 const Worker = require("../models/worker");
 
 // إضافة عامل جديد
 const addWorker = async (req, res) => {
     try {
-        const { workerID ,firstName ,lastName ,age , role, zone ,latitude ,longitude } = req.body;
+        const { workerID ,firstName ,lastName ,age  ,latitude ,longitude, zone } = req.body;
 
         // نحول الموقع لأرقام
         const lat = Number(latitude);
@@ -14,7 +15,7 @@ const addWorker = async (req, res) => {
         return res.status(400).json({ error: "Invalid coordinates" });
     }
         // نتأكد كل المعلومات موجودة
-        if (!workerID || !firstName || !lastName || !age || !role || latitude === undefined || longitude === undefined) {
+        if (!workerID || !firstName || !lastName || !age || latitude === undefined || longitude === undefined) {
             return res.status(400).json({ error: "Missing worker info" });
         }
 
@@ -30,27 +31,70 @@ const addWorker = async (req, res) => {
                 error: "Factory is required. Send factory ID or assign a factory to your user account."
             });
         }
-
         const newWorker = new Worker({ 
-             workerID: workerID.trim(), 
+            workerID: workerID.trim(), 
             firstName, 
             lastName, 
             age, 
-            role,
             location: {
-                        type: "Point",
-                        coordinates: [lng, lat]
-                      }, 
-            factory: factoryId,  
-            zone        
+                type: "Point",
+                coordinates: [lng, lat]
+            },
+            lastLocation: {
+                lat: lat,
+                lng: lng
+            },
+            factory: new mongoose.Types.ObjectId(factoryId),
+            zone: zone ? new mongoose.Types.ObjectId(zone) : null         
         });
         await newWorker.save();
-
+        
         res.status(201).json({ message: "Worker added", worker: newWorker });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
+
+const updateWorkerLocation = async (req, res) => {
+  try {
+    const { workerID } = req.params;
+    const { latitude, longitude } = req.body;
+
+    const lat = Number(latitude);
+    const lng = Number(longitude);
+
+    if (isNaN(lat) || isNaN(lng)) {
+      return res.status(400).json({ error: "Invalid coordinates" });
+    }
+
+    const worker = await Worker.findOne({
+        workerID,
+        factory: req.user.factory
+    });
+    if (!worker) {
+      return res.status(404).json({ error: "Worker not found" });
+    }
+
+    // تحديث الموقع
+    worker.location = {
+      type: "Point",
+      coordinates: [lng, lat]
+    };
+
+    worker.lastLocation = {
+      lat,
+      lng
+    };
+
+    await worker.save();
+
+    res.json({ message: "Location updated", worker });
+
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 
 //  ID البحث عن عامل حسب
 const findWorkerByID = async (workerID) => {
@@ -61,9 +105,11 @@ const findWorkerByID = async (workerID) => {
 const getAllWorkers = async (req, res) => {
     try {
         const isAdminWithoutFactory =
-            req.user.role === "ADMIN" && (req.user.factory == null || req.user.factory === "");
+        req.user.role === "ADMIN" && (req.user.factory == null || req.user.factory === "");
+
         const filter = isAdminWithoutFactory ? {} : { factory: req.user.factory };
         const workers = await Worker.find(filter);
+
         res.json({ count: workers.length, workers });
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -85,7 +131,9 @@ const getWorkerByID = async (req, res) => {
         const query = isAdminWithoutFactory
             ? { workerID }
             : { workerID, factory: req.user.factory };
-        const worker = await Worker.findOne(query);
+
+        const worker = await Worker.findOne(query)
+        
         if (!worker) return res.status(404).json({ error: "Worker not found" });
 
         res.json(worker);
@@ -131,5 +179,6 @@ module.exports = {
     getWorkerByID,
     findWorkerByID,
     deleteWorkerByID,
-    deleteAllWorkers
+    deleteAllWorkers,
+    updateWorkerLocation
 };

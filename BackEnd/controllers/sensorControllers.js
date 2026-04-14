@@ -33,14 +33,12 @@ const receiveSensorData = async (req, res) => {
         }
         
         // ✅ تحديث موقع العامل الحالي
-       await Worker.updateOne(
-        { workerID },
-        {
-           lastLocation: {
-           lat: Number(latitude),
-           lng: Number(longitude)
-              }
-          }
+        await Worker.updateOne(
+            { workerID },
+            { 
+                location: { type: "Point", coordinates: [lng, lat] },
+                lastLocation: { lat, lng }
+            }
         );
 
         //  alertController استدعاء منطق التنبيه من

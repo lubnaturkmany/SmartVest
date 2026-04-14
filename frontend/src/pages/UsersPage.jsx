@@ -1,27 +1,45 @@
 import { useState } from "react";
 import { useUsers } from "../hooks/useUsers";
 import { useModal } from "../hooks/useModal";
+import { useFactories } from "../hooks/useFactories";
+import { useAuth } from "../hooks/useAuth";
 
 const initial = {
   username: "",
   email: "",
   password: "",
   role: "SECURITY",
-  workerID: ""
+  workerID: "",
+  factoryId: "",   
+  factoryName: ""
 };
 
 export default function UsersPage() {
-  const { users, loading, error, registerUser } = useUsers();
+  const { users, loading, error, registerUser, loadUsers, totalUsers, page, totalPages, goNext, goPrev } = useUsers();
   const { openModal } = useModal();
+  const { user, loading: authLoading } = useAuth();
   const [form, setForm] = useState(initial);
   const [busy, setBusy] = useState(false);
-  const [showPanel, setShowPanel] = useState(false); // <<< التحكم باللوحة الجانبية
+  const [showPanel, setShowPanel] = useState(false); // <<< التحكم باللوحة الجانبي
 
+  if (authLoading) return <p>Loading...</p>;
+  if (!user) return <p>No user logged in.</p>;
+  
+  
+  
   const submit = async (e) => {
     e.preventDefault();
     setBusy(true);
     try {
+       
+      const payload = { ...form };
+      if (form.role === "FACTORY_MANAGER") {
+        payload.factoryName = form.factoryName;
+        delete payload.factoryId;
+      }
+
       await registerUser(form);
+      setPage(1);
       setForm(initial);
       setShowPanel(false); // إخفاء اللوحة بعد الإضافة
       openModal({
@@ -45,6 +63,13 @@ export default function UsersPage() {
   return (
     <div className="grid" style={{ position: "relative" }}>
       <h2 style={{ margin: 0 }}>Users</h2>
+
+      {/* Total Users */}
+      {totalUsers !== undefined && (
+        <div style={{ margin: "10px 0", fontWeight: "bold" }}>
+          Total Users: {totalUsers}
+          </div>
+        )}
 
       {/* زر Add User أعلى يمين الشاشة */}
       <button
@@ -146,12 +171,25 @@ export default function UsersPage() {
               value={form.role}
               onChange={(e) => setForm((p) => ({ ...p, role: e.target.value }))}
             >
-              <option value="ADMIN">ADMIN</option>
+              {user?.role === "ADMIN" && (
               <option value="FACTORY_MANAGER">FACTORY_MANAGER</option>
+              )}
               <option value="SECURITY">SECURITY</option>
               <option value="SAFETY">SAFETY</option>
             </select>
           </div>
+
+          {/* إذا Factory Manager → حقل اسم المصنع */}
+          {form.role === "FACTORY_MANAGER" && (
+          <div>
+            <label>Factory Name</label>
+            <input
+              value={form.factoryName}
+              onChange={(e) => setForm((p) => ({ ...p, factoryName: e.target.value }))}
+              required
+            />
+          </div>
+          )}
           <div>
             <label>Worker ID (optional)</label>
             <input
@@ -177,16 +215,39 @@ export default function UsersPage() {
               <th>Username</th>
               <th>Email</th>
               <th>Role</th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
-            {users.map((u) => (
-              <tr key={u._id || u.email}>
-                <td>{u.username}</td>
-                <td>{u.email}</td>
-                <td>{u.role}</td>
-              </tr>
-            ))}
+            {[...users]
+            .sort((a, b) => (a._id === user?._id ? -1 : b._id === user?._id ? 1 : 0)) // 👈 رح نشرحها تحت
+            .map((u) => (
+            <tr
+            key={u._id || u.email}
+            style={user?._id === u._id ? { background: "#f0fdf4" } : {}}
+            >
+              <td>{u.username}</td>
+              <td>{u.email}</td>
+              <td>{u.role}</td>
+
+              <td>
+          {user?._id === u._id && (
+            <span style={{
+              background: "#d1fae5",
+              color: "#065f46",
+              padding: "2px 8px",
+              borderRadius: "6px",
+              fontSize: "12px",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "4px"
+            }}>
+              👤 You
+            </span>
+          )}
+        </td>
+            </tr>
+          ))}
             {!users.length ? (
               <tr>
                 <td colSpan={3}>No users available from this API.</td>
@@ -195,6 +256,14 @@ export default function UsersPage() {
           </tbody>
         </table>
       </div>
-    </div>
-  );
-}
+      {/* Pagination */}
+      {users.length > 0 && totalPages > 1 && (
+        <div style={{ marginTop: "20px", display: "flex", justifyContent: "center", gap: "10px" }}>
+          <button onClick={goPrev} disabled={page === 1}>Previous</button>
+          <span>Page {page} of {totalPages}</span>
+          <button onClick={goNext} disabled={page === totalPages}>Next</button>
+          </div>
+        )}
+        </div>
+        );
+      }

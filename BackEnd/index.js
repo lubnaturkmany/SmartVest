@@ -53,6 +53,7 @@ app.use("/api/alerts", alertRoutes);
 app.use("/api/workers", workerRoutes);
 app.use("/api/factories", factoryRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/users", authRoutes);
 
 // test route 
 app.get("/test", (req, res) => {

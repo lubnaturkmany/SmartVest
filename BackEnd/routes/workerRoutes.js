@@ -6,21 +6,25 @@ const {
     getAllWorkers, 
     getWorkerByID,
     deleteWorkerByID,
-    deleteAllWorkers 
-      } = require("../controllers/workerControllers"); 
+    deleteAllWorkers,
+    updateWorkerLocation 
+  } = require("../controllers/workerControllers"); 
 // إضافة عامل → Admin فقط
-router.post("/", protect, authorizeRoles("ADMIN"), addWorker);
+router.post("/", protect, authorizeRoles("ADMIN" , "FACTORY_MANAGER"), addWorker);
 
-// عرض كل العمال → Admin + Supervisor
-router.get("/", protect, authorizeRoles("ADMIN", "SECURITY"), getAllWorkers);
+// عرض كل العمال → Admin + SECURITY + FACTORY_MANAGER
+router.get("/", protect, authorizeRoles("ADMIN", "SECURITY" , "FACTORY_MANAGER"), getAllWorkers);
 
-// عرض عامل معين → Admin + Supervisor
-router.get("/:workerID", protect, authorizeRoles("ADMIN", "SECURITY"), getWorkerByID);
+// عرض عامل معين → Admin + SECURITY + FACTORY_MANAGER
+router.get("/:workerID", protect, authorizeRoles("ADMIN", "SECURITY" , "FACTORY_MANAGER"), getWorkerByID);
 
 // حذف عامل معين → Admin فقط
-router.delete("/:workerID", protect, authorizeRoles("ADMIN"), deleteWorkerByID);
+router.delete("/:workerID", protect, authorizeRoles("ADMIN" , "FACTORY_MANAGER"), deleteWorkerByID);
 
 // حذف جميع العمال → Admin فقط
-router.delete("/", protect, authorizeRoles("ADMIN"), deleteAllWorkers);
+router.delete("/", protect, authorizeRoles("ADMIN" , "FACTORY_MANAGER"), deleteAllWorkers);
+
+//تحديث موقع العامل 
+router.put("/:workerID/location", updateWorkerLocation);
 
 module.exports = router;

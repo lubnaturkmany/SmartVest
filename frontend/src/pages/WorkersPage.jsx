@@ -17,7 +17,6 @@ function makeInitialForm(factoryId = "") {
     firstName: "",
     lastName: "",
     age: "",
-    role: "Operator",
     factory: factoryId,
     latitude: "",
     longitude: ""
@@ -41,6 +40,13 @@ export default function WorkersPage() {
     }
   }, [user]);
 
+    // ✨ تعبئة المصنع تلقائيًا
+  useEffect(() => {
+    if (user?.factory) {
+      setForm(p => ({ ...p, factory: user.factory }));
+    }
+  }, [user]);
+
   const onAddWorker = async (e) => {
     e.preventDefault();
     setBusy(true);
@@ -49,9 +55,10 @@ export default function WorkersPage() {
         ...form,
         age: Number(form.age),
         latitude: Number(form.latitude),
-        longitude: Number(form.longitude)
+        longitude: Number(form.longitude),
+        factory: form.factory
       });
-      setForm(makeInitialForm(form.factory || userFactoryId(user)));
+      setForm(makeInitialForm(form.factory));
       setShowPanel(false);
       openModal({
         title: "Success",
@@ -101,7 +108,10 @@ export default function WorkersPage() {
   return (
     <div className="grid" style={{ position: "relative" }}>
       <h2 style={{ margin: 0 }}>Workers</h2>
-
+      {/* عرض عدد العمال */}
+      <div style={{ margin: "10px 0", fontWeight: "bold" }}>
+        Total Workers: {workers.length}
+        </div>
       <div className="card">
         {loading ? <p>Loading workers...</p> : null}
         {error ? <p>{error}</p> : null}
@@ -111,8 +121,8 @@ export default function WorkersPage() {
               <th>Worker ID</th>
               <th>Name</th>
               <th>Age</th>
-              <th>Role</th>
-              <th>Action</th>
+              <th>Factory</th>
+              {(user.role === "ADMIN" || user.role === "FACTORY_MANAGER") && <th>Action</th>}
             </tr>
           </thead>
           <tbody>
@@ -121,12 +131,14 @@ export default function WorkersPage() {
                 <td>{w.workerID}</td>
                 <td>{w.firstName} {w.lastName}</td>
                 <td>{w.age}</td>
-                <td>{w.role}</td>
+                <td>{ w.factory}</td>
                 <td>
-                  <button className="ghost" onClick={() => onDeleteClick(w.workerID)}>
-                    Delete
-                  </button>
-                </td>
+                  {(user.role === "ADMIN" || user.role === "FACTORY_MANAGER") && (
+                    <button className="ghost" onClick={() => onDeleteClick(w.workerID)}>
+                      Delete
+                      </button>
+                    )}
+                    </td>
               </tr>
             ))}
             {!workers.length ? (
@@ -139,6 +151,7 @@ export default function WorkersPage() {
       </div>
 
       {/* زر Add Worker أعلى يمين الشاشة */}
+      {user.role === "ADMIN" || user.role === "FACTORY_MANAGER" ? (
       <button
         onClick={() => setShowPanel(true)}
         style={{
@@ -147,7 +160,7 @@ export default function WorkersPage() {
           right: "20px",
           padding: "10px 20px",
           background: "#4e7ea3",
-          color: "#fff",
+          color: "#ffffff",
           border: "none",
           borderRadius: "5px",
           cursor: "pointer",
@@ -156,6 +169,7 @@ export default function WorkersPage() {
       >
         Add Worker
       </button>
+      ) : null}
 
       {/* overlay خلف اللوحة */}
       {showPanel && (
@@ -238,31 +252,6 @@ export default function WorkersPage() {
               onChange={(e) => setForm((p) => ({ ...p, age: e.target.value }))}
               required
             />
-          </div>
-          <div>
-            <label>Role</label>
-            <input
-              value={form.role}
-              onChange={(e) => setForm((p) => ({ ...p, role: e.target.value }))}
-              required
-            />
-          </div>
-          <div style={{ gridColumn: "1 / -1" }}>
-            <label>Factory</label>
-            <select
-              value={form.factory}
-              onChange={(e) => setForm((p) => ({ ...p, factory: e.target.value }))}
-              required
-            >
-              <option value="">Select a factory</option>
-              {factories.map((f) => (
-                <option key={f._id} value={f._id}>
-                  {f.name}
-                </option>
-              ))}
-            </select>
-            {factoriesLoading ? <small style={{ color: "#4e7ea3" }}>Loading factories…</small> : null}
-            {factoriesError ? <small style={{ color: "#165078" }}>{factoriesError}</small> : null}
           </div>
           <div>
             <label>Latitude</label>

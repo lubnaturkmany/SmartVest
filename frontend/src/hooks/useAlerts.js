@@ -5,12 +5,15 @@ export function useAlerts(pollMs = 0) {
   const [alerts, setAlerts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [totalAlerts, setTotalAlerts] = useState(0);
 
   const loadAlerts = useCallback(async () => {
     setError("");
     try {
       const data = await apiClient.get("/api/alerts");
-      setAlerts(Array.isArray(data) ? data : []);
+      const alertsData = Array.isArray(data) ? data : [];
+      setAlerts(alertsData);
+    setTotalAlerts(alertsData.length);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -28,5 +31,5 @@ export function useAlerts(pollMs = 0) {
     return () => clearInterval(timer);
   }, [pollMs, loadAlerts]);
 
-  return { alerts, loading, error, loadAlerts };
+  return { alerts, loading, error, loadAlerts, totalAlerts };
 }

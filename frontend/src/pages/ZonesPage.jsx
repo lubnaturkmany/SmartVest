@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
-import { useFactories } from "../hooks/useFactories";
+//import { useFactories } from "../hooks/useFactories";
 import { useZones } from "../hooks/useZones";
 import { useAuth } from "../hooks/useAuth";
 import { useModal } from "../hooks/useModal";
 
 export default function ZonesPage() {
   const { user } = useAuth();
-  const { factories, loading: factoriesLoading, error: factoriesError } = useFactories();
+  //const { factories, loading: factoriesLoading, error: factoriesError } = useFactories();
   const { zones, loading, error, loadZones, addZone, deleteZone } = useZones();
   const { openModal } = useModal();
 
@@ -14,37 +14,45 @@ export default function ZonesPage() {
   const [busy, setBusy] = useState(false);
   const [form, setForm] = useState({
     zoneName: "",
-    type: "gas",
+    types: "all",
     center: { lat: "", lng: "" },
     radius: "",
     threshold: "",
     factoryId: ""
   });
 
-  // تحميل الزونات عند فتح الصفحة (يمكن تعديل حسب حاجتك)
-  useEffect(() => {
-    loadZones(); // هنا يمكن تعديل الـ hook ليحمل كل الزونات أو حسب الصلاحيات
-  }, [loadZones]);
+useEffect(() => {
+  if (!user) return;
+
+  // لو Admin → نرسل loadZones بدون factoryId
+  if (user.role === "ADMIN") {
+    loadZones(); // ← سيطر داخل hook على اختيار الرابط الصحيح
+  } else if (user.factory) {
+    setForm(p => ({ ...p, factoryId: user.factory }));
+    loadZones(user.factory);
+  }
+}, [user, loadZones]);
 
   const onAddZone = async (e) => {
     e.preventDefault();
     setBusy(true);
     try {
       await addZone(form.factoryId, {
-        zoneName: form.zoneName,
-        type: form.type,
-        center: { lat: Number(form.center.lat), lng: Number(form.center.lng) },
-        radius: Number(form.radius),
-        threshold: Number(form.threshold)
-      });
+      zoneName: form.zoneName,
+      types: form.types === "all" ? ["gas", "temperature", "flame"] : [form.types],
+      center: { lat: Number(form.center.lat), lng: Number(form.center.lng) },
+      radius: Number(form.radius),
+      threshold: Number(form.threshold)
+    });
+
 
       setForm({
         zoneName: "",
-        type: "gas",
+        types: "all",
         center: { lat: "", lng: "" },
         radius: "",
         threshold: "",
-        factoryId: ""
+        factoryId: form.factoryId
       });
       setShowPanel(false);
       openModal({ title: "Success", message: "Zone added", confirmText: "OK", hideCancel: true });
@@ -72,6 +80,10 @@ export default function ZonesPage() {
   return (
     <div className="grid" style={{ position: "relative" }}>
       <h2 style={{ margin: 0 }}>Zones</h2>
+      {/* بطاقة Total Zones */}
+      <div style={{ margin: "10px 0", fontWeight: "bold" }}>
+        Total Zones: {zones.length}
+        </div>
 
       <div className="card">
         {loading ? <p>Loading zones…</p> : null}
@@ -80,7 +92,8 @@ export default function ZonesPage() {
           <thead>
             <tr>
               <th>Name</th>
-              <th>Type</th>
+              {user.role === "ADMIN" && <th>Factory Name</th>}
+              <th>types</th>
               <th>Center</th>
               <th>Radius</th>
               <th>Threshold</th>
@@ -88,10 +101,13 @@ export default function ZonesPage() {
             </tr>
           </thead>
           <tbody>
-            {zones.map((z) => (
+            {Array.isArray(zones) && zones.map((z) => (
               <tr key={z._id}>
                 <td>{z.zoneName}</td>
-                <td>{z.type}</td>
+                {user.role === "ADMIN" && (
+                  <td>{z.factory?.name || "-"}</td>
+                  )}
+                <td>{Array.isArray(z.types) ? z.types.join(", ") : z.types}</td>
                 <td>{z.center.lat}, {z.center.lng}</td>
                 <td>{z.radius}</td>
                 <td>{z.threshold}</td>
@@ -164,28 +180,14 @@ export default function ZonesPage() {
             </button>
             <h3>Add Zone</h3>
             <form className="grid two" onSubmit={onAddZone}>
-              {/* اختيار المصنع هنا */}
-              <div>
-                <label>Factory</label>
-                <select
-                  value={form.factoryId}
-                  onChange={(e) => setForm(p => ({ ...p, factoryId: e.target.value }))}
-                  required
-                >
-                  <option value="">-- Select Factory --</option>
-                  {factories.map((f) => (
-                    <option key={f._id} value={f._id}>{f.name}</option>
-                  ))}
-                </select>
-              </div>
-
               <div>
                 <label>Name</label>
                 <input value={form.zoneName} onChange={(e) => setForm(p => ({ ...p, zoneName: e.target.value }))} required />
               </div>
               <div>
-                <label>Type</label>
-                <select value={form.type} onChange={(e) => setForm(p => ({ ...p, type: e.target.value }))}>
+                <label>types</label>
+                <select value={form.types} onChange={(e) => setForm(p => ({ ...p, types: e.target.value }))}>
+                  <option value="all">All</option>
                   <option value="gas">Gas</option>
                   <option value="temperature">Temperature</option>
                   <option value="flame">Flame</option>

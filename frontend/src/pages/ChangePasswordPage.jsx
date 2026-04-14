@@ -32,15 +32,11 @@ export default function ChangePasswordPage() {
     setBusy(true);
 
     try {
-      const res = await apiClient.post(
-        "/api/auth/change-password",
-        { newPassword: password },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const res = await apiClient.post("/api/auth/change-password", {
+        token: token,        // <-- حط token هون
+        newPassword: password // <-- الباسورد الجديد
+        });
+  
 
       setSuccess(res.message || "Password changed successfully!");
 

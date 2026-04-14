@@ -12,9 +12,9 @@ if (!MONGO_URI) {
 
 // بيانات أول Admin
 const firstAdmin = {
-  username: "LubnaTurkmani",
-  email: "lubnaturk@test.com",
-  password: "123456", // 🔥 تقدري تغيريه
+  username: "Admin",
+  email: "adminTest@test.com",
+  password: "7890", 
   role: "ADMIN",
   factory: null,
 };

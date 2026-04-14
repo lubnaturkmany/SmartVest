@@ -4,9 +4,9 @@
   "main": "index.js",
   "type": "commonjs",
   "scripts": {
-    "dev": "nodemon index.js",
-    "start": "node index.js"
-  },
+  "start": "node index.js",
+  "dev": "nodemon index.js"
+},
   "dependencies": {
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",

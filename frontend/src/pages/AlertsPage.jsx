@@ -1,11 +1,17 @@
 import { useAlerts } from "../hooks/useAlerts";
 
 export default function AlertsPage() {
-  const { alerts, loading, error } = useAlerts(10000);
+  const { alerts, loading, error, totalAlerts } = useAlerts(10000);
 
   return (
     <div className="grid">
       <h2 style={{ margin: 0 }}>Alerts</h2>
+      {/* Total Alerts */}
+      {totalAlerts !== undefined && (
+        <div style={{ margin: "10px 0", fontWeight: "bold" }}>
+          Total Alerts: {totalAlerts}
+        </div>
+      )}
       <div className="card">
         {loading ? <p>Loading alerts...</p> : null}
         {error ? <p>{error}</p> : null}

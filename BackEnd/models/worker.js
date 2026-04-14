@@ -28,10 +28,9 @@ factory: {
     type: Number,
     required: true
   },
-      //  قسم العامل 
-  zone: { 
-    type: mongoose.Schema.Types.ObjectId, ref: "Zone" 
-  },
+  // إضافة zone
+  zone: { type: mongoose.Schema.Types.ObjectId, ref: "Zone", default: null },
+  
   // موقع العامل
   location: {
   type: {

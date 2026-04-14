@@ -10,14 +10,14 @@ const {
 router.get(
   "/",
   protect,
-  authorizeRoles("ADMIN", "SECURITY"),
+  authorizeRoles("ADMIN", "SECURITY" , "FACTORY_MANAGER"),
   getAllAlerts
 );
 //GET api alerts workerID 
 router.get(
   "/:workerID",
   protect,
-  authorizeRoles("ADMIN" , "SECURITY"),
+  authorizeRoles("ADMIN" , "SECURITY" , "FACTORY_MANAGER"),
   getAlertsByWorker
 );
  

@@ -41,7 +41,7 @@ const checkAndCreateAlert = async ({
       return { status: "Normal", message: "" };
     }
 
-    const factory = worker.factory;
+    const zones = await Zone.find({ factory: worker.factory._id });
 
     // نمر على كل مناطق الخطر الخاصة بالمصنع
     for (let zone of factory.zones) {
@@ -57,19 +57,19 @@ const checkAndCreateAlert = async ({
       if (distance <= zone.radius) {
 
         // Gas Zone
-        if (zone.type === "gas" && gasLevel > zone.threshold) {
+        if (zone.types.includes("gas") && gasLevel > zone.threshold) {
           status = "Danger";
           message = `🚨 High gas level in ${zone.zoneName}`;
         }
 
         // Temperature Zone
-        if (zone.type === "temperature" && temperature > zone.threshold) {
+        if (zone.types.includes("temperature") && temperature > zone.threshold) {
           status = "Danger";
           message = `🌡 High temperature in ${zone.zoneName}`;
         }
 
         // Flame Zone
-        if (zone.type === "flame" && flameDetected === true) {
+        if (zone.types.includes("flame") && flameDetected === true) {
           status = "Danger";
           message = `🔥 Flame detected in ${zone.zoneName}`;
         }
@@ -87,7 +87,7 @@ const checkAndCreateAlert = async ({
               latitude: Number(latitude),
               longitude: Number(longitude)
             },
-             factory: worker.factory
+             factory: worker.factory._id
           });
 
           break; // ما نكمل على باقي المناطق
@@ -118,11 +118,6 @@ const getAllAlerts = async (req, res) => {
 const getAlertsByWorker = async (req, res) => {
   try {
     const { workerID } = req.params;
-
-    //  يشوف فقط معلوماته worker إذا المستخدم
-    if (req.user.role === "Worker" && req.user.workerID !== workerID) {
-      return res.status(403).json({ error: "Access denied" });
-    }
 
    const workerAlerts = await Alert.find({
     workerID,

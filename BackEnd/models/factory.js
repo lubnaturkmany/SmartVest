@@ -2,7 +2,6 @@ const mongoose = require("mongoose");
 const crypto = require("crypto");
 
 const zoneSchema = new mongoose.Schema({
-  zoneName: { type: String, required: true },
   type: { type: String, enum: ["gas", "temperature", "flame"], required: true },
   center: {
     lat: { type: Number, required: true },
@@ -17,6 +16,7 @@ const factorySchema = new mongoose.Schema({
   apiKey: { type: String, required: true, default: () => crypto.randomBytes(16).toString("hex") },
   zones: { type: [zoneSchema], default: [] },
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  manager: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   isConfigured: { type: Boolean, default: false },
 }, { timestamps: true });
 

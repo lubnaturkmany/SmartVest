@@ -26,12 +26,10 @@ export function useWorkers() {
   }, [loadWorkers]);
 
   // ➕ إضافة عامل
-  const addWorker = async (payload) => {
-    await apiClient.post("/api/workers", payload);
-
-    // 🔥 بعد الإضافة → نجيب البيانات من السيرفر مباشرة
-    await loadWorkers();
-  };
+    const addWorker = async (payload) => {
+    const data = await apiClient.post("/api/workers", payload);
+    setWorkers(prev => [...prev, data.worker]);  // worker هنا يحتوي على factory populated
+    };
 
   // ❌ حذف عامل
   const deleteWorker = async (workerID) => {

@@ -15,6 +15,7 @@ import ChangePasswordPage from "./pages/ChangePasswordPage";
 
 function AppShell() {
   useDangerAlerts(true);
+  const { user } = useAuth();
   return (
     <AppLayout>
       <Routes>
@@ -22,9 +23,21 @@ function AppShell() {
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/workers" element={<WorkersPage />} />
         <Route path="/alerts" element={<AlertsPage />} />
-        <Route path="/factories" element={<FactoriesPage />} />
+        <Route
+        path="/factories"
+        element={
+          user?.role === "ADMIN" ? <FactoriesPage /> : <Navigate to="/dashboard" replace />
+          }
+          />
         <Route path="/zones" element={<ZonesPage />} />
-        <Route path="/users" element={<UsersPage />} />
+        <Route
+        path="/users"
+        element={
+        <ProtectedRoute roles={["ADMIN", "FACTORY_MANAGER"]}>
+          <UsersPage />
+          </ProtectedRoute>
+        }
+        />
       </Routes>
     </AppLayout>
   );

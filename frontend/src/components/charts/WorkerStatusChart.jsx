@@ -1,6 +1,6 @@
 import {
-  Bar,
-  BarChart,
+  Area,
+  AreaChart,
   CartesianGrid,
   Cell,
   Legend,
@@ -12,10 +12,13 @@ import {
   YAxis
 } from "recharts";
 
-const PIE_COLORS = ["#7fd0ff", "#5ab8f0", "#2c98e9"];
-const BAR_COLORS = ["#7fd0ff", "#5ab8f0", "#2c98e9"];
+const dynamicPieColors = {
+  low: ["#2ecc71", "#a9dfbf", "#d5f5e3"],
+  medium: ["#f1c40f", "#fdebd0", "#fcf3cf"],
+  high: ["#e74c3c", "#fadbd8", "#f5b7b1"]
+};
 
-export default function WorkerStatusChart({ data, workerCount = 0 }) {
+export default function WorkerStatusChart({ data, workerCount = 0, dangerLevel = "low" }) {
   const total = data.reduce((s, d) => s + (Number(d.value) || 0), 0);
 
   if (!workerCount && total === 0) {
@@ -23,65 +26,86 @@ export default function WorkerStatusChart({ data, workerCount = 0 }) {
       <div className="card dashboard-chart-card">
         <h3>Worker status</h3>
         <p className="chart-empty-hint">
-          Add workers from the Workers page to see status distribution (Normal / Warning / Danger from
-          alerts).
+          Add workers to see chart data.
         </p>
       </div>
     );
   }
 
+  const chartColors = {
+  low: {
+    stroke: "#27ae60",
+    fill: "#a9dfbf"
+  },
+  medium: {
+    stroke: "#f39c12",
+    fill: "#fdebd0"
+  },
+  high: {
+    stroke: "#e74c3c",
+    fill: "#fadbd8"
+  }
+};
+
   return (
     <div className="card dashboard-chart-card">
       <h3>Worker status</h3>
-      <p className="chart-subtitle">Distribution by latest alert type per worker</p>
+      <p className="chart-subtitle">
+        Distribution by latest alert type per worker
+      </p>
+
       <div className="chart-grid">
-        <div className="chart-block">
-          <h4 className="chart-block-title">Bar chart</h4>
-          <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={data} margin={{ top: 8, right: 12, left: 0, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#c5e4f5" vertical={false} />
-              <XAxis dataKey="name" tick={{ fill: "#3d7196", fontSize: 12 }} />
-              <YAxis allowDecimals={false} tick={{ fill: "#3d7196", fontSize: 12 }} />
-              <Tooltip
-                contentStyle={{
-                  background: "#f0f9ff",
-                  border: "1px solid #b8defb",
-                  borderRadius: 8
-                }}
-              />
-              <Bar dataKey="value" name="Workers" radius={[8, 8, 0, 0]}>
-                {data.map((entry, index) => (
-                  <Cell key={entry.name} fill={BAR_COLORS[index % BAR_COLORS.length]} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-        <div className="chart-block">
-          <h4 className="chart-block-title">Pie chart</h4>
-          <ResponsiveContainer width="100%" height={260}>
-            <PieChart>
-              <Pie
-                data={data}
-                dataKey="value"
-                nameKey="name"
-                cx="50%"
-                cy="50%"
-                innerRadius={48}
-                outerRadius={88}
-                paddingAngle={2}
-                label={({ name, value }) => `${name}: ${value}`}
-              >
-                {data.map((entry, index) => (
-                  <Cell key={entry.name} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip />
-              <Legend />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
+  {/* Area Chart */}
+  <div className="card dashboard-chart-card chart-block">
+    <h4 className="chart-block-title">Area chart</h4>
+    <div style={{ width: "100%", height: 260 }}>
+      <ResponsiveContainer width="100%" height={200}>
+        <AreaChart data={data}>
+          <CartesianGrid strokeDasharray="3 3" vertical={false} />
+          <XAxis dataKey="name" />
+          <YAxis allowDecimals={false} />
+          <Tooltip />
+          <Area
+            type="monotone"
+            dataKey="value"
+            stroke={chartColors[dangerLevel].stroke}
+            fill={chartColors[dangerLevel].fill}
+            strokeWidth={2}
+          />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
+  </div>
+
+  {/* Pie Chart */}
+  <div className="card dashboard-chart-card chart-block">
+    <h4 className="chart-block-title">Pie chart</h4>
+    <div style={{ width: "100%", height: 260 }}>
+      <ResponsiveContainer width="100%" height={200}>
+        <PieChart margin={{ top:10,right:10,left:10,bottom:20}}>
+          <Pie
+            data={data}
+            dataKey="value"
+            innerRadius={50}
+            outerRadius={70}
+            paddingAngle={2}
+          >
+            {data.map((entry, index) => (
+              <Cell key={index} fill={dynamicPieColors[dangerLevel][index % 3]} />
+            ))}
+          </Pie>
+          <Tooltip />
+          <Legend
+          verticalAlign="bottom"
+          align="center"
+          height={36}
+          wrapperStyle={{ fontSize: "12px", overflow:"hidden" }}
+          />
+        </PieChart>
+      </ResponsiveContainer>
+    </div>
+  </div>
+</div>
     </div>
   );
 }

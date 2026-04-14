@@ -1,6 +1,8 @@
 const Factory = require("../models/factory");
+const User = require("../models/user");
+const Zone = require("../models/zone");
 
-// التحقق من القفل 
+// التحقق من القفل
 const checkConfigured = (factory, user) => {
   if (factory.isConfigured && user.role !== "ADMIN") {
     const err = new Error("Factory configuration is locked");
@@ -9,63 +11,88 @@ const checkConfigured = (factory, user) => {
   }
 };
 
-// إنشاء مصنع جديد
-const createFactory = async (req, res) => {
-  try {
-    const { name, zones } = req.body;
-
-    if (!name) return res.status(400).json({ error: "Factory name is required" });
-
-    const existing = await Factory.findOne({ name });
-    if (existing) return res.status(400).json({ error: "Factory already exists" });
-
-    const factory = new Factory({
-      name,
-      zones: zones || [],
-      createdBy: req.user._id,
-      isConfigured: false,
-    });
-
-    await factory.save();
-
-    res.status(201).json({
-      message: "Factory created successfully",
-      factory
-    });
-
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-// عرض كل المصانع (للاستخدام الداخلي فقط )
+// عرض كل المصانع (Admin فقط)
 const getAllFactories = async (req, res) => {
   try {
     const factories = await Factory.find();
-    res.status(200).json(factories);
+
+    // عدّ الزونات لكل مصنع
+    const factoriesWithZoneCount = await Promise.all(
+      factories.map(async (f) => {
+        const count = await Zone.countDocuments({ factory: f._id });
+        return { ...f.toObject(), zoneCount: count };
+      })
+    );
+
+    res.status(200).json(factoriesWithZoneCount);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
-// إضافة منطقة جديدة للمصنع
+// إضافة منطقة جديدة
 const addZone = async (req, res) => {
   try {
-    const { factoryId } = req.params;
-    const { zoneName, type, center, radius, threshold } = req.body;
+    let { factoryId } = req.params;
+    const { zoneName, types, center, radius, threshold } = req.body;
+
+    // التحقق من أنواع صحيحة
+    if (types && (!Array.isArray(types) || types.some(t => !["gas","temperature","flame","all"].includes(t)))) {
+      return res.status(400).json({ error: "Invalid types array" });
+    }
+
+    // إذا المستخدم مش Admin، نستخدم مصنعه فقط
+    if (req.user.role !== "ADMIN") {
+      factoryId = req.user.factory;
+    }
 
     const factory = await Factory.findById(factoryId);
     if (!factory) return res.status(404).json({ error: "Factory not found" });
 
-    // التحقق من القفل قبل أي تعديل
     checkConfigured(factory, req.user);
 
-    // التحقق من صحة القيم 
-    factory.zones.push({ zoneName, type, center, radius, threshold });
-    await factory.save();
+    let finalTypes = types;
+    if (types && types.includes("all")) {
+      finalTypes = ["gas", "temperature", "flame"];
+    }
 
-    res.status(201).json({ message: "Zone added", zones: factory.zones });
+    const newZone = new Zone({
+      zoneName,
+      types: finalTypes,
+      center,
+      radius,
+      threshold,
+      factory: factoryId
+    });
 
+    await newZone.save();
+
+    res.status(201).json({
+      message: "Zone added",
+      zone: newZone
+    });
+
+  } catch (error) {
+    console.log("ZONE ERROR:", error.message);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// جلب الزونات
+const getZones = async (req, res) => {
+  try {
+    let zones;
+
+    if (req.user.role === "ADMIN") {
+      // Admin: كل الزونات
+      zones = await Zone.find().populate("factory", "name");
+    } else {
+      // غير Admin: زونات المصنع الخاص
+      const factoryId = req.user.factory;
+      zones = await Zone.find({ factory: factoryId }).populate("factory", "name");
+    }
+
+    res.status(200).json({ zones });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -74,37 +101,33 @@ const addZone = async (req, res) => {
 // تعديل منطقة
 const updateZone = async (req, res) => {
   try {
-    const { factoryId, zoneId } = req.params;
-    const { zoneName, type, center, radius, threshold } = req.body;
+    let { factoryId, zoneId } = req.params;
+    const { zoneName, types, center, radius, threshold } = req.body;
+
+    // إذا المستخدم مش Admin، نستخدم مصنعه فقط
+    if (req.user.role !== "ADMIN") {
+      factoryId = req.user.factory;
+    }
 
     const factory = await Factory.findById(factoryId);
     if (!factory) return res.status(404).json({ error: "Factory not found" });
 
-    // التحقق من القفل قبل أي تعديل
     checkConfigured(factory, req.user);
 
-    const zone = factory.zones.id(zoneId);
+    const zone = await Zone.findOne({ _id: zoneId, factory: factoryId });
     if (!zone) return res.status(404).json({ error: "Zone not found" });
 
-    // تحقق من صحة القيم قبل التعديل
-    if (type && !["gas", "temperature", "flame"].includes(type)) {
-      return res.status(400).json({ error: "Invalid zone type" });
+    // تعديل القيم
+    if (zoneName) zone.zoneName = zoneName;
+    if (types) {
+      let finalTypes = types.includes("all") ? ["gas","temperature","flame"] : types;
+      zone.types = finalTypes;
     }
-    if (radius !== undefined && radius <= 0) {
-      return res.status(400).json({ error: "Invalid radius" });
-    }
-    if (threshold !== undefined && threshold < 0) {
-      return res.status(400).json({ error: "Invalid threshold" });
-    }
+    if (center) zone.center = center;
+    if (radius !== undefined) zone.radius = radius;
+    if (threshold !== undefined) zone.threshold = threshold;
 
-    zone.zoneName = zoneName || zone.zoneName;
-    zone.type = type || zone.type;
-    zone.center = center || zone.center;
-    zone.radius = radius || zone.radius;
-    zone.threshold = threshold || zone.threshold;
-
-    await factory.save();
-
+    await zone.save();
     res.status(200).json({ message: "Zone updated", zone });
 
   } catch (error) {
@@ -115,31 +138,34 @@ const updateZone = async (req, res) => {
 // حذف منطقة
 const deleteZone = async (req, res) => {
   try {
-    const { factoryId, zoneId } = req.params;
+    let { factoryId, zoneId } = req.params;
+
+    if (req.user.role !== "ADMIN") {
+      factoryId = req.user.factory;
+    }
 
     const factory = await Factory.findById(factoryId);
     if (!factory) return res.status(404).json({ error: "Factory not found" });
 
-    // التحقق من القفل قبل الحذف
     checkConfigured(factory, req.user);
 
-    const zone = factory.zones.id(zoneId);
+    const zone = await Zone.findOneAndDelete({ _id: zoneId, factory: factoryId });
     if (!zone) return res.status(404).json({ error: "Zone not found" });
 
-    zone.remove();
-    await factory.save();
+    const zones = await Zone.find({ factory: factoryId }).populate("factory", "name");
 
-    res.status(200).json({ message: "Zone deleted", zones: factory.zones });
+    res.status(200).json({ message: "Zone deleted", zones });
 
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
+
 module.exports = {
-  createFactory,
   getAllFactories,
   addZone,
   updateZone,
-  deleteZone
+  deleteZone,
+  getZones
 };

@@ -24,9 +24,9 @@ export function useFactories() {
   }, [loadFactories]);
 
   const createFactory = async (name) => {
-    const data = await apiClient.post("/api/factories", { name });
-    setFactories((prev) => [data.factory, ...prev]);
-    return data;
+    const response = await apiClient.post("/api/factories", { name });
+    setFactories((prev) => [response.data.factory, ...prev]);
+    return response.data;
   };
 
   return { factories, loading, error, loadFactories, createFactory };
