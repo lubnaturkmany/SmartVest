@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { apiClient } from "../lib/apiClient";
-import { useModal } from "./useModal"; // إذا حابب تعرض رسائل
+import { useModal } from "./useModal";
 import { useAuth } from "./useAuth";
 
 export function useZones() {
@@ -11,64 +11,107 @@ export function useZones() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // جلب الزونات لمصنع معين
-  const loadZones = useCallback(async (factoryId) => {
-    setLoading(true);
-    setError(""); 
-    try {
-    let res;
-    if (user.role === "ADMIN") {
-      res = await apiClient.get("/api/factories/zones/all"); // كل الزونات للادمن
-    } else {
-      if (!factoryId) return;
-      res = await apiClient.get(`/api/factories/${factoryId}/zones`);
-    }
-      setZones(res?.zones || res?.data?.zones || []);
-    } catch (err) {
-      setError(err.message || "Failed to load zones");
-      openModal({
-        title: "Error",
-        message: err.message,
-        confirmText: "Close",
-        hideCancel: true
-      });
-    } finally {
-      setLoading(false);
-    }
-  }, [openModal]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
-  // إضافة Zone جديد
+  // =========================
+  // LOAD ZONES (pagination)
+  // =========================
+  const loadZones = useCallback(
+    async (factoryId, newPage = 1) => {
+      setLoading(true);
+      setError("");
+
+      try {
+        let res;
+
+        if (user?.role === "ADMIN") {
+          res = await apiClient.get(
+            `/api/factories/zones/all?page=${newPage}`
+          );
+        } else {
+          if (!factoryId) return;
+
+          res = await apiClient.get(
+            `/api/factories/${factoryId}/zones?page=${newPage}`
+          );
+        }
+
+        const data = res?.data || res;
+
+        setZones(data?.zones || []);
+        setPage(data?.page || 1);
+        setTotalPages(data?.totalPages || 1);
+      } catch (err) {
+        setError(err.message);
+        openModal({
+          title: "Error",
+          message: err.message,
+          confirmText: "Close",
+          hideCancel: true,
+        });
+      } finally {
+        setLoading(false);
+      }
+    },
+    [user, openModal]
+  );
+
+  // =========================
+  // PAGINATION
+  // =========================
+  const goNext = () => {
+    if (page < totalPages) {
+      loadZones(user?.factory, page + 1);
+    }
+  };
+
+  const goPrev = () => {
+    if (page > 1) {
+      loadZones(user?.factory, page - 1);
+    }
+  };
+
+  // =========================
+  // ADD ZONE
+  // =========================
   const addZone = async (factoryId, payload) => {
     try {
-      const res = await apiClient.post(`/api/factories/${factoryId}/zones`, payload);
-      await loadZones(factoryId);
+      const res = await apiClient.post(
+        `/api/factories/${factoryId}/zones`,
+        payload
+      );
+
+      await loadZones(factoryId, page);
       return res;
     } catch (err) {
       openModal({
         title: "Add failed",
         message: err.message,
         confirmText: "Close",
-        hideCancel: true
+        hideCancel: true,
       });
       throw err;
     }
   };
 
-  // حذف Zone
+  // =========================
+  // DELETE ZONE
+  // =========================
   const deleteZone = async (factoryId, zoneId) => {
     try {
-      const res = await apiClient.delete(`/api/factories/${factoryId}/zones/${zoneId}`);
-      console.log("FACTORY ID:", factoryId);
-      console.log("RESPONSE DATA:", res.data);
-      console.log("ZONES:", res.data?.zones);
-      setZones(res.data?.zones || []);
+      const res = await apiClient.delete(
+        `/api/factories/${factoryId}/zones/${zoneId}`
+      );
+
+      await loadZones(factoryId, page);
       return res;
     } catch (err) {
       openModal({
         title: "Delete failed",
         message: err.message,
         confirmText: "Close",
-        hideCancel: true
+        hideCancel: true,
       });
       throw err;
     }
@@ -78,8 +121,12 @@ export function useZones() {
     zones,
     loading,
     error,
+    page,
+    totalPages,
     loadZones,
     addZone,
-    deleteZone
+    deleteZone,
+    goNext,
+    goPrev,
   };
 }

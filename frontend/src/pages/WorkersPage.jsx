@@ -3,6 +3,8 @@ import { useWorkers } from "../hooks/useWorkers";
 import { useFactories } from "../hooks/useFactories";
 import { useAuth } from "../hooks/useAuth";
 import { useModal } from "../hooks/useModal";
+import Pagination from "../components/Pagination";
+import "../styles/workers.css";
 
 function userFactoryId(user) {
   if (!user?.factory) return "";
@@ -26,7 +28,7 @@ function makeInitialForm(factoryId = "") {
 export default function WorkersPage() {
   const { user } = useAuth();
   const { factories, loading: factoriesLoading, error: factoriesError } = useFactories();
-  const { workers, loading, error, addWorker, deleteWorker } = useWorkers();
+  const {workers,loading,error,page,totalPages,goNext,goPrev,addWorker,deleteWorker} = useWorkers();
   const { openModal } = useModal();
 
   const [form, setForm] = useState(() => makeInitialForm(""));
@@ -107,26 +109,28 @@ export default function WorkersPage() {
 
   return (
     <div className="grid" style={{ position: "relative" }}>
-      <h2 style={{ margin: 0 }}>Workers</h2>
+      <h2 className="page-title">👷 Workers</h2>
       {/* عرض عدد العمال */}
-      <div style={{ margin: "10px 0", fontWeight: "bold" }}>
+      <div className="users-counter" style={{ margin: "1px 0", fontWeight: "bold" }}>
         Total Workers: {workers.length}
         </div>
-      <div className="card">
+      
         {loading ? <p>Loading workers...</p> : null}
         {error ? <p>{error}</p> : null}
-        <table className="table">
+        <table className="table workers-table">
           <thead>
             <tr>
               <th>Worker ID</th>
               <th>Name</th>
               <th>Age</th>
               <th>Factory</th>
-              {(user.role === "ADMIN" || user.role === "FACTORY_MANAGER") && <th>Action</th>}
+              <th>Action</th>
             </tr>
           </thead>
           <tbody>
-            {workers.map((w) => (
+            {workers
+            .sort((a, b) => Number(a.workerID) - Number(b.workerID))
+            .map((w) => (
               <tr key={w._id || w.workerID}>
                 <td>{w.workerID}</td>
                 <td>{w.firstName} {w.lastName}</td>
@@ -148,7 +152,12 @@ export default function WorkersPage() {
             ) : null}
           </tbody>
         </table>
-      </div>
+        <Pagination
+        page={page}
+        totalPages={totalPages}
+        goNext={goNext}
+        goPrev={goPrev}
+        />
 
       {/* زر Add Worker أعلى يمين الشاشة */}
       {user.role === "ADMIN" || user.role === "FACTORY_MANAGER" ? (
@@ -156,8 +165,8 @@ export default function WorkersPage() {
         onClick={() => setShowPanel(true)}
         style={{
           position: "fixed",
-          top: "20px",
-          right: "20px",
+          top: "25px",
+          right: "30.5px",
           padding: "10px 20px",
           background: "#4e7ea3",
           color: "#ffffff",
@@ -195,7 +204,7 @@ export default function WorkersPage() {
           right: showPanel ? 0 : "-400px",
           width: "400px",
           height: "100%",
-          background: "#fff",
+          background: "#ffffff",
           boxShadow: "-2px 0 8px rgba(0,0,0,0.3)",
           padding: "20px",
           transition: "right 0.3s ease",
@@ -208,7 +217,7 @@ export default function WorkersPage() {
             position: "absolute",
             top: "10px",
             right: "10px",
-            background: "transparent",
+            background: "#4e7ea3",
             border: "none",
             fontSize: "18px",
             cursor: "pointer"
@@ -273,11 +282,11 @@ export default function WorkersPage() {
               required
             />
           </div>
-          <div style={{ alignSelf: "end", gridColumn: "1 / -1" }}>
-            <button type="submit" disabled={busy} style={{ width: "100%" }}>
-              {busy ? "Adding..." : "Add Worker"}
+          <div className="add-worker-btn" style={{ gridColumn: "1 / -1", marginTop: "25px" }}>
+          <button type="submit" disabled={busy} style={{ width: "100%" }}>
+            {busy ? "Adding..." : "Add Worker"}
             </button>
-          </div>
+            </div>
         </form>
       </div>
     </div>

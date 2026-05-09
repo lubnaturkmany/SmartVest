@@ -6,13 +6,23 @@ export function useWorkers() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // 🔄 جلب العمال من السيرفر
-  const loadWorkers = useCallback(async () => {
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
+  const loadWorkers = useCallback(async (newPage = 1) => {
     setLoading(true);
     setError("");
+
     try {
-      const data = await apiClient.get("/api/workers");
-      setWorkers(data.workers || []);
+      const res = await apiClient.get(
+        `/api/workers?page=${newPage}&limit=10`
+      );
+
+      const data = res?.data || res;
+
+      setWorkers(data?.workers || []);
+      setPage(data?.page || 1);
+      setTotalPages(data?.totalPages || 1);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -20,31 +30,40 @@ export function useWorkers() {
     }
   }, []);
 
-  // تحميل أولي
   useEffect(() => {
-    loadWorkers();
+    loadWorkers(1);
   }, [loadWorkers]);
 
-  // ➕ إضافة عامل
-    const addWorker = async (payload) => {
-    const data = await apiClient.post("/api/workers", payload);
-    setWorkers(prev => [...prev, data.worker]);  // worker هنا يحتوي على factory populated
-    };
+  const goNext = () => {
+    if (page < totalPages) loadWorkers(page + 1);
+  };
 
-  // ❌ حذف عامل
+  const goPrev = () => {
+    if (page > 1) loadWorkers(page - 1);
+  };
+
+  const addWorker = async (payload) => {
+    const res = await apiClient.post("/api/workers", payload);
+    await loadWorkers(page);
+    return res.data;
+  };
+
   const deleteWorker = async (workerID) => {
     await apiClient.delete(`/api/workers/${workerID}`);
-
-    // 🔥 بعد الحذف → تحديث البيانات
-    await loadWorkers();
+    await loadWorkers(page);
   };
 
   return {
-    workers,
-    loading,
-    error,
-    loadWorkers,
-    addWorker,
-    deleteWorker
-  };
+  workers,
+  loading,
+  error,
+  page,
+  totalPages,
+  loadWorkers,
+  setPage,
+  goNext,
+  goPrev,
+  addWorker,
+  deleteWorker,
+};
 }

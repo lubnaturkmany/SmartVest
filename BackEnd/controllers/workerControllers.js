@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const Worker = require("../models/worker");
+const paginate = require("../utils/paginate");
 
 // إضافة عامل جديد
 const addWorker = async (req, res) => {
@@ -103,17 +104,34 @@ const findWorkerByID = async (workerID) => {
 
 // عرض كل العمال
 const getAllWorkers = async (req, res) => {
-    try {
-        const isAdminWithoutFactory =
-        req.user.role === "ADMIN" && (req.user.factory == null || req.user.factory === "");
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
 
-        const filter = isAdminWithoutFactory ? {} : { factory: req.user.factory };
-        const workers = await Worker.find(filter);
+    const isAdminWithoutFactory =
+      req.user.role === "ADMIN" &&
+      (req.user.factory == null || req.user.factory === "");
 
-        res.json({ count: workers.length, workers });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
+    const filter = isAdminWithoutFactory
+      ? {}
+      : { factory: req.user.factory };
+
+    const workers = await Worker.find(filter)
+      .skip(skip)
+      .limit(limit);
+
+    const total = await Worker.countDocuments(filter);
+
+    res.json({
+      workers,
+      page,
+      totalPages: Math.ceil(total / limit),
+      totalWorkers: total,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
 // عرض عامل معين

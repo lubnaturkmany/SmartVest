@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useModal } from "../hooks/useModal";
+import "../styles/login.css";
 
 function IconMail() {
   return (
@@ -98,6 +99,7 @@ export default function LoginPage() {
   };
 
   return (
+    <div className="login-page">
     <div className="login-screen-v2">
       <div className="login-cloud-card" role="presentation">
         <div className="login-cloud-inner">
@@ -176,9 +178,10 @@ export default function LoginPage() {
 
           <div className="login-cloud-right">
             <h2 className="login-brand-title">Smart Safety System</h2>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </div>  
   );
 }

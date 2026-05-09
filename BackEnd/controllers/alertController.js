@@ -1,9 +1,13 @@
 const Alert = require("../models/alert");
 const Worker = require("../models/worker");
 const Factory = require("../models/factory");
-// بتحسب المسافة
+const Zone = require("../models/zone");
+
+// =========================
+// حساب المسافة بين نقطتين
+// =========================
 function calculateDistance(lat1, lon1, lat2, lon2) {
-  const R = 6371000; // نصف قطر الأرض بالمتر
+  const R = 6371000;
 
   const dLat = (lat2 - lat1) * Math.PI / 180;
   const dLon = (lon2 - lon1) * Math.PI / 180;
@@ -16,36 +20,37 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
     Math.sin(dLon / 2);
 
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c; // المسافة بالمتر
+  return R * c;
 }
 
-// تحديد حالة العامل وإنشاء التنبيه حسب منطقة المصنع
-const checkAndCreateAlert = async ({
-  workerID,
-  temperature,
-  gasLevel,
-  flameDetected,
-  latitude,
-  longitude
-}) => {
+// =========================
+// إنشاء Alert
+// =========================
+const checkAndCreateAlert = async (req, res) => {
+  const {
+    workerID,
+    temperature,
+    gasLevel,
+    flameDetected,
+    latitude,
+    longitude
+  } = req.body;
 
   let status = "Normal";
   let message = "";
+  let hazardType = null;
+  let zoneName = null;
 
   try {
-
-    // نجيب العامل مع المصنع تبعه
     const worker = await Worker.findOne({ workerID }).populate("factory");
 
     if (!worker || !worker.factory) {
-      return { status: "Normal", message: "" };
+      return res.json({ status: "Normal", message: "" });
     }
 
     const zones = await Zone.find({ factory: worker.factory._id });
 
-    // نمر على كل مناطق الخطر الخاصة بالمصنع
-    for (let zone of factory.zones) {
-
+    for (let zone of zones) {
       const distance = calculateDistance(
         Number(latitude),
         Number(longitude),
@@ -53,32 +58,81 @@ const checkAndCreateAlert = async ({
         zone.center.lng
       );
 
-      // إذا العامل داخل نصف القطر
       if (distance <= zone.radius) {
 
-        // Gas Zone
-        if (zone.types.includes("gas") && gasLevel > zone.threshold) {
-          status = "Danger";
-          message = `🚨 High gas level in ${zone.zoneName}`;
+       let gasAlert = false;
+       let tempAlert = false;
+       let flameAlert = false;
+
+       let hazardsCount = 0;
+       let lastHazard = null;
+
+        zoneName = zone.zoneName;
+
+        // GAS
+        if (zone.types.includes("gas")) {
+          if (gasLevel > zone.threshold * 1.5) {
+            gasAlert = true;
+            hazardsCount++;
+            lastHazard = "gas";
+            status = "Danger";
+          } 
+          else if (gasLevel > zone.threshold) {
+            gasAlert = true;
+            lastHazard = "gas";
+            status = status === "Danger" ? "Danger" : "Warning";
+            message = `⚠️ Elevated gas level in ${zone.zoneName}`;
+          }
         }
 
-        // Temperature Zone
-        if (zone.types.includes("temperature") && temperature > zone.threshold) {
-          status = "Danger";
-          message = `🌡 High temperature in ${zone.zoneName}`;
+        // TEMPERATURE
+        if (zone.types.includes("temperature")) {
+          if (temperature > zone.threshold * 1.5) {
+            tempAlert = true;
+            hazardsCount++;
+            lastHazard = "temperature";
+            status = "Danger";
+          } 
+          else if (temperature > zone.threshold) {
+            tempAlert = true;
+            lastHazard = "temperature";
+            status = status === "Danger" ? "Danger" : "Warning";
+            message = `⚠️ Elevated temperature level in ${zone.zoneName}`;
+          }
         }
 
-        // Flame Zone
+        // FLAME
         if (zone.types.includes("flame") && flameDetected === true) {
+          flameAlert = true;
+          hazardsCount++;
+          lastHazard = "flame";
           status = "Danger";
-          message = `🔥 Flame detected in ${zone.zoneName}`;
         }
 
-        // نخزن التنبيه ونوقف البحث → إذا صار خطر 
-        if (status === "Danger") {
+        if (hazardsCount >= 2) {
+          message = `🚨 CRITICAL ALERT: Multiple hazards detected in zone ${zone.zoneName}`;
+          hazardType = lastHazard;
+          status = "Danger";
+        } else if (hazardsCount === 1) {
+          if (lastHazard === "gas") {
+            message = `🚨 High gas level in ${zone.zoneName}`;
+          } else if (lastHazard === "temperature") {
+            message = `🌡 High temperature in ${zone.zoneName}`;} else if (lastHazard === "flame") {
+              message = `🔥 Flame detected in ${zone.zoneName}`;
+            }
+            hazardType = lastHazard;
+          }
+          
+
+        // =========================
+        // CREATE ALERT
+        // =========================
+        if (status === "Danger" || status === "Warning") {
           await Alert.create({
             workerID,
             type: status,
+            hazardType,
+            zone: zoneName,
             message,
             temperature,
             gasLevel,
@@ -87,53 +141,104 @@ const checkAndCreateAlert = async ({
               latitude: Number(latitude),
               longitude: Number(longitude)
             },
-             factory: worker.factory._id
+            factory: worker.factory._id
           });
 
-          break; // ما نكمل على باقي المناطق
+          break;
         }
       }
     }
 
-    return { status, message };
+    return res.status(200).json({ status, message });
 
   } catch (error) {
     console.error("Alert processing error:", error.message);
-    return { status: "Normal", message: "" };
+    return res.status(500).json({ message: error.message });
   }
 };
 
-// عرض كل التنبيهات
+// =========================
+// Get All Alerts (pagination)
+// =========================
 const getAllAlerts = async (req, res) => {
-    try {
-        const alerts = await Alert.find({ factory: req.user.factory });
-        res.status(200).json(alerts);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    let filter = { isResolved: false };
+
+    // 👇 إذا مش admin → فلترة حسب المصنع
+    if (req.user.role !== "ADMIN") {
+      filter.factory = req.user.factory;
     }
+
+    const alerts = await Alert.find(filter)
+      .sort({ date: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    const total = await Alert.countDocuments(filter);
+
+    return res.status(200).json({
+      alerts,
+      page,
+      totalPages: Math.ceil(total / limit),
+      totalAlerts: total
+    });
+
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
 };
 
-
-// عرض تنبيهات عامل معين
+// =========================
+// Get Alerts by Worker
+// =========================
 const getAlertsByWorker = async (req, res) => {
   try {
     const { workerID } = req.params;
 
-   const workerAlerts = await Alert.find({
-    workerID,
-    factory: req.user.factory 
-}).sort({ date: -1 });
+    const workerAlerts = await Alert.find({
+      workerID,
+      factory: req.user.factory
+    }).sort({ date: -1 });
 
-    res.status(200).json(workerAlerts);
+    return res.status(200).json(workerAlerts);
 
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    return res.status(500).json({ message: error.message });
   }
 };
 
+const resolveAlert = async (req, res) => {
+  try {
+    const { id } = req.params;
 
+    console.log("RESOLVE ID:", id);
+
+    const updated = await Alert.findByIdAndUpdate(
+      id,
+      {
+        isResolved: true
+      },
+      {
+        new: true
+      }
+    );
+
+    console.log("UPDATED ALERT:", updated);
+
+    res.status(200).json(updated);
+
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: error.message });
+  }
+};
 module.exports = {
-    checkAndCreateAlert,
-    getAllAlerts,
-    getAlertsByWorker
+  checkAndCreateAlert,
+  getAllAlerts,
+  getAlertsByWorker,
+  resolveAlert
 };

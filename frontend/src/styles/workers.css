@@ -1,0 +1,60 @@
+.workers-table th { color: #063555; }
+.workers-table td{
+  padding: 10px 10px;
+}
+.page-title {
+  margin: 0;
+  font-size: 25px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: -6px;
+  position: relative;
+}
+
+.page-title::after {
+  display: none;
+}
+
+.workers-table .ghost {
+  background: #f5e1de;
+  color: rgb(245, 43, 43);
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.ghost:hover {
+  background: #fc9589;
+}
+
+.users-counter {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+
+  padding: 4px 15px;
+
+  border: 1.5px solid #4e7ea3;
+  border-radius: 6px;
+
+  background: transparent;
+  color: #063555;
+
+  font-size: 15px;
+  font-weight: 300;
+  margin-left: 1px;
+  margin-top: -3px;
+}
+
+.add-worker-btn {
+  color: white;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}

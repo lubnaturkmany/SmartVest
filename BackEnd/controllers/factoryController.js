@@ -1,6 +1,7 @@
 const Factory = require("../models/factory");
 const User = require("../models/user");
 const Zone = require("../models/zone");
+const paginate = require("../utils/paginate");
 
 // التحقق من القفل
 const checkConfigured = (factory, user) => {
@@ -14,9 +15,14 @@ const checkConfigured = (factory, user) => {
 // عرض كل المصانع (Admin فقط)
 const getAllFactories = async (req, res) => {
   try {
-    const factories = await Factory.find();
+    const { page, limit, skip } = paginate(req);
 
-    // عدّ الزونات لكل مصنع
+    const factories = await Factory.find()
+      .skip(skip)
+      .limit(limit);
+
+    const total = await Factory.countDocuments();
+
     const factoriesWithZoneCount = await Promise.all(
       factories.map(async (f) => {
         const count = await Zone.countDocuments({ factory: f._id });
@@ -24,7 +30,13 @@ const getAllFactories = async (req, res) => {
       })
     );
 
-    res.status(200).json(factoriesWithZoneCount);
+    res.status(200).json({
+      factories: factoriesWithZoneCount,
+      page,
+      totalPages: Math.ceil(total / limit),
+      totalFactories: total
+    });
+
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -81,18 +93,28 @@ const addZone = async (req, res) => {
 // جلب الزونات
 const getZones = async (req, res) => {
   try {
-    let zones;
+    const { page, limit, skip } = paginate(req);
 
-    if (req.user.role === "ADMIN") {
-      // Admin: كل الزونات
-      zones = await Zone.find().populate("factory", "name");
-    } else {
-      // غير Admin: زونات المصنع الخاص
-      const factoryId = req.user.factory;
-      zones = await Zone.find({ factory: factoryId }).populate("factory", "name");
+    let query = {};
+
+    if (req.user.role !== "ADMIN") {
+      query.factory = req.user.factory;
     }
 
-    res.status(200).json({ zones });
+    const zones = await Zone.find(query)
+      .populate("factory", "name")
+      .skip(skip)
+      .limit(limit);
+
+    const total = await Zone.countDocuments(query);
+
+    res.status(200).json({
+      zones,
+      page,
+      totalPages: Math.ceil(total / limit),
+      totalZones: total
+    });
+
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

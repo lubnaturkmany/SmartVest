@@ -12,11 +12,11 @@ const {
 // إضافة عامل → Admin فقط
 router.post("/", protect, authorizeRoles("ADMIN" , "FACTORY_MANAGER"), addWorker);
 
-// عرض كل العمال → Admin + SECURITY + FACTORY_MANAGER
-router.get("/", protect, authorizeRoles("ADMIN", "SECURITY" , "FACTORY_MANAGER"), getAllWorkers);
+// عرض كل العمال → Admin + SECURITY + FACTORY_MANAGER + SAFETY
+router.get("/", protect, authorizeRoles("ADMIN", "SECURITY" , "FACTORY_MANAGER","SAFETY"), getAllWorkers);
 
-// عرض عامل معين → Admin + SECURITY + FACTORY_MANAGER
-router.get("/:workerID", protect, authorizeRoles("ADMIN", "SECURITY" , "FACTORY_MANAGER"), getWorkerByID);
+// عرض عامل معين → Admin + SECURITY + FACTORY_MANAGER + SAFETY
+router.get("/:workerID", protect, authorizeRoles("ADMIN", "SECURITY" , "FACTORY_MANAGER" ,"SAFETY"), getWorkerByID);
 
 // حذف عامل معين → Admin فقط
 router.delete("/:workerID", protect, authorizeRoles("ADMIN" , "FACTORY_MANAGER"), deleteWorkerByID);

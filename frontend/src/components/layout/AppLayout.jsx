@@ -29,7 +29,7 @@ const filteredNav = navItems.filter((item) => {
     <div className="app-layout">
       <aside className="sidebar">
         <div className="brand">{APP_NAME}</div>
-        <p style={{ color: "#3d7196", marginTop: 0 }}>
+        <p className="user-role">
           {user?.username || "User"} ({user?.role || "N/A"})
         </p>
         <nav>

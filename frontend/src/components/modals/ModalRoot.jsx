@@ -18,6 +18,7 @@ export default function ModalRoot() {
     <CenteredModal
       title={modal.title || "Action"}
       message={modal.message}
+      type={modal.type || "info"}   
       confirmText={modal.confirmText}
       cancelText={modal.cancelText}
       hideCancel={modal.hideCancel}

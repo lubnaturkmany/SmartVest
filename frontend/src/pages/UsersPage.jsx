@@ -3,6 +3,8 @@ import { useUsers } from "../hooks/useUsers";
 import { useModal } from "../hooks/useModal";
 import { useFactories } from "../hooks/useFactories";
 import { useAuth } from "../hooks/useAuth";
+import Pagination from "../components/Pagination";
+import "../styles/users.css";
 
 const initial = {
   username: "",
@@ -15,7 +17,7 @@ const initial = {
 };
 
 export default function UsersPage() {
-  const { users, loading, error, registerUser, loadUsers, totalUsers, page, totalPages, goNext, goPrev } = useUsers();
+  const { users, loading, error, registerUser, loadUsers, totalUsers, page,setPage, totalPages, goNext, goPrev } = useUsers();
   const { openModal } = useModal();
   const { user, loading: authLoading } = useAuth();
   const [form, setForm] = useState(initial);
@@ -62,11 +64,11 @@ export default function UsersPage() {
 
   return (
     <div className="grid" style={{ position: "relative" }}>
-      <h2 style={{ margin: 0 }}>Users</h2>
+      <h2 className="page-title">👤 Users</h2>
 
-      {/* Total Users */}
+                    {/* Total Users */}
       {totalUsers !== undefined && (
-        <div style={{ margin: "10px 0", fontWeight: "bold" }}>
+        <div className="users-counter" style={{  fontWeight: "bold" }}>
           Total Users: {totalUsers}
           </div>
         )}
@@ -76,8 +78,8 @@ export default function UsersPage() {
         onClick={() => setShowPanel(true)}
         style={{
           position: "fixed",
-          top: "20px",
-          right: "20px",
+          top: "25px",
+          right: "30.5px",
           padding: "10px 20px",
           background: "#4e7ea3",
           color: "#fff",
@@ -127,7 +129,7 @@ export default function UsersPage() {
             position: "absolute",
             top: "10px",
             right: "10px",
-            background: "transparent",
+            background: "#4e7ea3",
             border: "none",
             fontSize: "18px",
             cursor: "pointer"
@@ -206,10 +208,9 @@ export default function UsersPage() {
       </div>
 
       {/* جدول المستخدمين */}
-      <div className="card">
         {loading ? <p>Loading users...</p> : null}
         {error ? <p>{error}</p> : null}
-        <table className="table">
+        <table className="table users-table">
           <thead>
             <tr>
               <th>Username</th>
@@ -220,11 +221,11 @@ export default function UsersPage() {
           </thead>
           <tbody>
             {[...users]
-            .sort((a, b) => (a._id === user?._id ? -1 : b._id === user?._id ? 1 : 0)) // 👈 رح نشرحها تحت
+            .sort((a, b) => (a._id === user?._id ? -1 : b._id === user?._id ? 1 : 0)) 
             .map((u) => (
             <tr
             key={u._id || u.email}
-            style={user?._id === u._id ? { background: "#f0fdf4" } : {}}
+            style={user?._id === u._id ? { background: "hsla(197, 94%, 80%, 0.25)" } : {}}
             >
               <td>{u.username}</td>
               <td>{u.email}</td>
@@ -236,8 +237,8 @@ export default function UsersPage() {
               background: "#d1fae5",
               color: "#065f46",
               padding: "2px 8px",
-              borderRadius: "6px",
-              fontSize: "12px",
+              borderRadius: "8px",
+              fontSize: "14px",
               display: "inline-flex",
               alignItems: "center",
               gap: "4px"
@@ -255,15 +256,15 @@ export default function UsersPage() {
             ) : null}
           </tbody>
         </table>
-      </div>
+
+
       {/* Pagination */}
-      {users.length > 0 && totalPages > 1 && (
-        <div style={{ marginTop: "20px", display: "flex", justifyContent: "center", gap: "10px" }}>
-          <button onClick={goPrev} disabled={page === 1}>Previous</button>
-          <span>Page {page} of {totalPages}</span>
-          <button onClick={goNext} disabled={page === totalPages}>Next</button>
-          </div>
-        )}
+      <Pagination
+  page={page}
+  totalPages={totalPages}
+  goNext={goNext}
+  goPrev={goPrev}
+/>
         </div>
         );
       }

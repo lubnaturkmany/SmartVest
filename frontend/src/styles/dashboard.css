@@ -1,0 +1,234 @@
+/* =========================
+   DASHBOARD LAYOUT
+========================= */
+.dashboard-full {
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.dashboard-content {
+  flex: 1;
+}
+
+/* =========================
+   KPI CARDS (4 STATS)
+========================= */
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.dashboard-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  margin-top: 12px;
+  transition: margin 0.3s ease;
+  align-items: stretch;
+  justify-content: space-between;
+  height: 100%;
+}
+
+/* Card base (stats only) */
+.dashboard-cards .stat-card-center {
+  min-height: clamp(100px, 12vh, 150px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 12px 8px;
+}
+
+/* Text reset */
+.stat-card-center h4,
+.stat-card-center p {
+  margin: 0;
+  line-height: 1.2;
+}
+
+/* Titles */
+.stat-card-center h4 {
+  font-weight: 700;
+  font-size: 21px;
+  margin-bottom: 10px;
+  color: #6b8da6;
+}
+
+/* Numbers */
+.stat-card-center p {
+  font-size: 24px;
+  font-weight: 640;
+  margin-top: 10px;
+  color: #1c4f6e;
+}
+
+/* KPI card types */
+.card-workers {
+  border-left: 4px solid #3498db;
+  background: linear-gradient(135deg, #b4deff, #b9e1ff) !important;
+}
+
+.card-alerts {
+  border-left: 4px solid #f39c12;
+  background: linear-gradient(135deg, #ffe6bb, #ffe8b6) !important;
+}
+
+.card-danger {
+  border-left: 4px solid #e74c3c;
+  background: linear-gradient(135deg, #fdecea, #ffffff);
+}
+
+.card-zones {
+  border-left: 4px solid #9b59b6;
+  background: linear-gradient(135deg, #eddcf5, #e9dcee) !important;
+}
+
+.card-workers h4 { color: #3498db; }
+.card-alerts h4 { color: #f39c12; }
+.card-danger h4 { color: #e74c3c; }
+.card-zones h4 { color: #9b59b6; }
+
+/* Hover effect (KPIs only) */
+.stat-card {
+  transition: all 0.2s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+
+/* Danger levels (KPIs only) */
+.card.stat-card-center.danger-low {
+  border-left: 4px solid #27ae60;
+  background: #e8f9f0;
+}
+
+.card.stat-card-center.danger-medium {
+  border-left: 4px solid #f39c12;
+  background: #fff4e6;
+}
+
+.card.stat-card-center.danger-high {
+  border-left: 4px solid #e74c3c;
+  background: #ffe8e8;
+}
+
+.card.stat-card-center.danger-low h4 { color: #27ae60; }
+.card.stat-card-center.danger-medium h4 { color: #f39c12; }
+.card.stat-card-center.danger-high h4 { color: #e74c3c; }
+
+/* =========================
+   CHARTS SECTION (SEPARATE)
+========================= */
+
+.dashboard-chart-card {
+  min-height: clamp(260px, 45vh, 520px);
+  padding: 16px;
+  width: 100%;
+  overflow-x: auto;
+  margin-top: -1px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Chart layout wrapper */
+.chart-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  flex: 1;
+  align-items: stretch;
+}
+
+/* Individual chart block */
+.chart-block {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  height: 100%;
+  flex: 1;
+}
+
+/* Chart title */
+.chart-block-title {
+  margin: 0 0 8px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1a5270;
+  margin-bottom: 25px;
+}
+
+/* Optional hints */
+.chart-subtitle {
+  margin: 0 0 12px;
+  font-size: 0.9rem;
+  color: #4e7ea3;
+}
+
+.chart-empty-hint {
+  margin: 8px 0 0;
+  color: #5a86a3;
+  line-height: 1.5;
+}
+
+.chart-empty-box {
+  height: 260px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #f3faff, #eaf6ff);
+  border: 1px dashed #9dd5ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4e7ea3;
+  font-weight: 600;
+}
+html, body {
+  overflow-x: hidden;
+}
+
+.user-role {
+  color: #3d7196;
+  margin-top: 13px; /* هون النزول */
+  margin-left: 10px;
+}
+
+.dashboard-chart-card h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a5270;
+}
+
+.chart-subtitle {
+  margin: 15px 0 16px 0;
+  font-size: 0.9rem;
+  color: #4e7ea3;
+}
+
+@media (min-width: 1400px) {
+  .dashboard-content {
+    padding-top: 30px;
+  }
+
+  .kpi-grid {
+    margin-top: 20px;
+  }
+
+  .chart-grid {
+    margin-top: 30px;
+  }
+}
+

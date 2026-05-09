@@ -3,11 +3,12 @@ import { useState, useEffect } from "react";
 import { useZones } from "../hooks/useZones";
 import { useAuth } from "../hooks/useAuth";
 import { useModal } from "../hooks/useModal";
+import Pagination from "../components/Pagination";
+import "../styles/zones.css";
 
 export default function ZonesPage() {
   const { user } = useAuth();
-  //const { factories, loading: factoriesLoading, error: factoriesError } = useFactories();
-  const { zones, loading, error, loadZones, addZone, deleteZone } = useZones();
+  const {zones,loading,error,page,totalPages,loadZones,addZone,deleteZone,goNext,goPrev} = useZones();
   const { openModal } = useModal();
 
   const [showPanel, setShowPanel] = useState(false);
@@ -68,7 +69,7 @@ useEffect(() => {
       cancelText: "Cancel",
       onConfirm: async () => {
         try {
-          await deleteZone(form.factoryId || zones[0]?.factory?._id, zoneId);
+          await deleteZone(user.factory, zoneId);
           openModal({ title: "Deleted", message: "Zone deleted successfully.", confirmText: "OK", hideCancel: true });
         } catch (_) {}
       }
@@ -79,16 +80,15 @@ useEffect(() => {
 
   return (
     <div className="grid" style={{ position: "relative" }}>
-      <h2 style={{ margin: 0 }}>Zones</h2>
+      <h2 className="page-title">🟣 Zones</h2>
       {/* بطاقة Total Zones */}
-      <div style={{ margin: "10px 0", fontWeight: "bold" }}>
+      <div className="users-counter" style={{ margin: "1px 0", fontWeight: "bold" }}>
         Total Zones: {zones.length}
         </div>
 
-      <div className="card">
         {loading ? <p>Loading zones…</p> : null}
         {error ? <p>{error}</p> : null}
-        <table className="table">
+        <table className="table table--zones">
           <thead>
             <tr>
               <th>Name</th>
@@ -121,7 +121,12 @@ useEffect(() => {
             {!zones.length && <tr><td colSpan={canManageZone ? 6 : 5}>No zones found.</td></tr>}
           </tbody>
         </table>
-      </div>
+        <Pagination
+        page={page}
+        totalPages={totalPages}
+        goNext={goNext}
+        goPrev={goPrev}
+        />
 
       {canManageZone && (
         <>
@@ -129,8 +134,8 @@ useEffect(() => {
             onClick={() => setShowPanel(true)}
             style={{
               position: "fixed",
-              top: "20px",
-              right: "20px",
+              top: "25px",
+              right: "30.5px",
               padding: "10px 20px",
               background: "#4e7ea3",
               color: "#fff",
@@ -165,7 +170,7 @@ useEffect(() => {
               right: showPanel ? 0 : "-400px",
               width: "400px",
               height: "100%",
-              background: "#fff",
+              background: "#ffffff",
               boxShadow: "-2px 0 8px rgba(0,0,0,0.3)",
               padding: "20px",
               transition: "right 0.3s ease",
@@ -174,7 +179,7 @@ useEffect(() => {
           >
             <button
               onClick={() => setShowPanel(false)}
-              style={{ position: "absolute", top: "10px", right: "10px", background: "transparent", border: "none", fontSize: "18px", cursor: "pointer" }}
+              style={{ position: "absolute", top: "10px", right: "10px", background: "#4e7ea3", border: "none", fontSize: "18px", cursor: "pointer" }}
             >
               ✖
             </button>

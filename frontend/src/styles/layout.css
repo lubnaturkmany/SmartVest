@@ -1,0 +1,82 @@
+* {
+  box-sizing: border-box;
+}
+
+.app-layout {
+  height: 100vh;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  overflow: hidden;
+}
+
+.sidebar {
+  background: #d7eeff;
+  border-right: 1px solid var(--line);
+  padding: 10px 12px;
+  padding-top: 20px;
+}
+
+.nav-link:first-of-type {
+  margin-top: 20px;
+}
+
+.content {
+  width: 100%;
+  padding: 24px;
+  min-width: 0;
+}
+
+/* Top bar */
+.top-bar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin: 0;
+  padding: 0;
+}
+
+.top-bar h2 {
+  margin: 0;
+  line-height: 1;
+}
+
+.brand {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(0,0,0,0.1);
+}
+
+.nav-link {
+  display: block;
+  padding: 10px 12px;
+  border-radius: 10px;
+  margin-bottom: 8px;
+  background: transparent;
+  cursor: pointer;
+  padding-left: 20px;
+}
+
+.nav-link.active,
+.nav-link:hover {
+  background: #bde2ff;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .app-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+  background: #d7eeff;
+  border-right: 1px solid var(--line);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px; /* أهم سطر للتنظيم */
+  width: 100%;
+}
+}

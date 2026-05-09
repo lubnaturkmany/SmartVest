@@ -1,14 +1,20 @@
 import { useState } from "react";
 import { useFactories } from "../hooks/useFactories";
 import { useModal } from "../hooks/useModal";
+import { useAuth } from "../hooks/useAuth";
+import Pagination from "../components/Pagination";
+import "../styles/factories.css";
 
 export default function FactoriesPage() {
-  const { factories, loading, error } = useFactories();
+  const {factories,loading,error,page,totalPages,goNext,goPrev} = useFactories();
   console.log("Loaded factories:", factories);
   const { openModal } = useModal();
+   const onDeleteFactory = (id) => {
+    console.log("delete factory", id);};
   const [name, setName] = useState("");
   const [showPanel, setShowPanel] = useState(false); // <<< التحكم باللوحة الجانبية
   const [busy, setBusy] = useState(false);
+  const { user } = useAuth();
 
   const submit = async (e) => {
     e.preventDefault();
@@ -36,20 +42,20 @@ export default function FactoriesPage() {
 
   return (
     <div className="grid" style={{ position: "relative" }}>
-      <h2 style={{ margin: 0 }}>Factories</h2>
-      <div style={{ margin: "10px 0", fontWeight: "bold" }}>
+      <h2 className="page-title">🏭 Factories</h2>
+      <div className="users-counter" style={{ margin: "1px 0", fontWeight: "bold" }}>
         Total Factories: {factories.length}
         </div>
       {/* جدول المصانع */}
-      <div className="card">
         {loading ? <p>Loading factories...</p> : null}
         {error ? <p>{error}</p> : null}
-        <table className="table">
+        <table className="table table--factories">
           <thead>
             <tr>
               <th>Name</th>
               <th>API Key</th>
               <th>Zones</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody>
@@ -58,6 +64,16 @@ export default function FactoriesPage() {
                 <td>{ factory.name}</td>
                 <td>{factory.apiKey || "-"}</td>
                 <td>{factory.zoneCount || 0}</td>
+                 <td>
+                  {(user.role === "ADMIN" || user.role === "FACTORY_MANAGER") && (
+                    <button
+                    className="ghost"
+                    onClick={() => onDeleteFactory(factory._id)}
+                    >
+                      Delete
+                      </button>
+                    )}
+                    </td>
               </tr>
             ))}
             {!factories.length ? (
@@ -67,7 +83,13 @@ export default function FactoriesPage() {
             ) : null}
           </tbody>
         </table>
+        <Pagination
+        page={page}
+        totalPages={totalPages}
+        goNext={goNext}
+        goPrev={goPrev}
+        />
       </div>
-    </div>
+      
   );
 }
