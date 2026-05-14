@@ -2,29 +2,30 @@ const connectDB = require("./configDB");
 const express = require("express");
 const path = require("path");
 const fs = require("fs");
-const cors = require("cors"); 
-require("dotenv").config({ path: "../.env" });
+const cors = require("cors");
+require("dotenv").config();
 
 const app = express();
+const PORT = process.env.PORT || 3000;
 
 // paths
 const publicDir = path.join(__dirname, "../FrontEnd/dist");
-const indexFile = path.join(publicDir, "index.html");
 
 // middleware
 app.use(cors({
-  origin: "http://localhost:5173", 
+  origin: [
+    "http://localhost:5173",
+    "https://smartvest-frontend-ten.vercel.app"
+  ],
   credentials: true
 }));
+
 app.use(express.json());
 
 // static files
 if (fs.existsSync(publicDir)) {
   app.use(express.static(publicDir));
 }
-
-// DB
-connectDB();
 
 // rate limit
 const rateLimit = require("express-rate-limit");
@@ -55,16 +56,20 @@ app.use("/api/factories", factoryRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/users", authRoutes);
 
-// test route 
+// test route
 app.get("/test", (req, res) => {
   res.json({ message: "SmartVest backend is running" });
 });
 
-app.get(/.*/, (req, res) => {
-  res.sendFile(indexFile);
-});
+// START ONLY ONCE
+connectDB()
+  .then(() => {
 
-// start server
-app.listen(3000, () => {
-  console.log("Server running on port 3000");
-});
+    app.listen(PORT, "0.0.0.0", () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+
+  })
+  .catch((err) => {
+    console.error("DB connection failed:", err);
+  });

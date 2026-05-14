@@ -2,6 +2,7 @@ const { checkAndCreateAlert } = require("./alertController");
 const { findWorkerByID } = require("./workerControllers");
 const Worker = require("../models/worker");
 const Factory = require("../models/factory");
+const { processAlert } = require("../services/alertService");
 
 const receiveSensorData = async (req, res) => {
     try {
@@ -36,20 +37,20 @@ const receiveSensorData = async (req, res) => {
         await Worker.updateOne(
             { workerID },
             { 
-                location: { type: "Point", coordinates: [lng, lat] },
-                lastLocation: { lat, lng }
+                location: { type: "Point", coordinates: [longitude, latitude] },
+                lastLocation: { lat: latitude, lng: longitude }
             }
         );
 
         //  alertController استدعاء منطق التنبيه من
-        const result = await checkAndCreateAlert({
-            workerID,
-            temperature,
-            gasLevel,
-            flameDetected,
-            latitude,
-            longitude
-        });
+        const result = await processAlert({
+  workerID,
+  temperature,
+  gasLevel,
+  flameDetected,
+  latitude,
+  longitude
+});
 
         res.status(200).json({
             status: "received",

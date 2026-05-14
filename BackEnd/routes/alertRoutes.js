@@ -1,41 +1,32 @@
-const express = require("express"); 
-const router = express.Router(); 
+const express = require("express");
+const router = express.Router();
 const { protect, authorizeRoles } = require("../middleware/authMiddleware");
+
 const {
-     getAllAlerts,
-     getAlertsByWorker,
-     checkAndCreateAlert,
-     resolveAlert
-      }= require("../controllers/alertController"); 
-//GET api alerts 
+  getAllAlerts,
+  getAlertsByWorker,
+  resolveAlert
+} = require("../controllers/alertController");
+
 router.get(
   "/",
   protect,
-  authorizeRoles("ADMIN", "SECURITY" , "FACTORY_MANAGER","SAFETY"),
+  authorizeRoles("ADMIN", "SECURITY", "FACTORY_MANAGER", "SAFETY"),
   getAllAlerts
 );
 
 router.patch(
   "/:id/resolve",
   protect,
-  authorizeRoles("ADMIN", "SECURITY", "FACTORY_MANAGER","SAFETY"),
+  authorizeRoles("ADMIN", "SECURITY", "FACTORY_MANAGER", "SAFETY"),
   resolveAlert
 );
 
-//GET api alerts workerID 
 router.get(
-  "/:workerID",
+  "/worker/:workerID",
   protect,
-  authorizeRoles("ADMIN" , "SECURITY" , "FACTORY_MANAGER","SAFETY"),
+  authorizeRoles("ADMIN", "SECURITY", "FACTORY_MANAGER", "SAFETY"),
   getAlertsByWorker
 );
 
-router.post(
-  "/",
-  protect,
-  authorizeRoles("ADMIN", "SECURITY", "FACTORY_MANAGER","SAFETY"),
-  checkAndCreateAlert
-);
-
- 
- module.exports=router;
+module.exports = router;

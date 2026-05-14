@@ -26,7 +26,7 @@ const addWorker = async (req, res) => {
             return res.status(400).json({ error: "Worker already exists" });
         }
 
-        const factoryId = req.body.factory || req.user.factory;
+        const factoryId = req.body.factory || req.factory._id;
         if (!factoryId) {
             return res.status(400).json({
                 error: "Factory is required. Send factory ID or assign a factory to your user account."
