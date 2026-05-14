@@ -1,4 +1,5 @@
 import { authStorage } from "./authStorage";
+const BASE_URL = "http://10.252.84.105:3000";
 
 async function request(path, options = {}) {
   const token = authStorage.getToken();
