@@ -42,7 +42,8 @@ const processAlert = async ({
       zone.center.lng
     );
 
-    if (distance > zone.radius) continue;
+    //if (distance > zone.radius) continue;
+    const isInsideZone = distance <= zone.radius;
 
     let hazards = 0;
     let last = null;
@@ -65,7 +66,8 @@ const processAlert = async ({
       status = "Danger";
     }
 
-    if (hazards === 0) return { status, message };
+    //if (hazards === 0) return { status, message };
+    if (hazards === 0) continue;
 
     if (hazards >= 2) {
       message = `🚨 CRITICAL ALERT in ${zone.zoneName}`;

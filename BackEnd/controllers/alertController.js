@@ -3,6 +3,8 @@ const Alert = require("../models/alert");
 
 const checkAndCreateAlert = async (req, res) => {
   try {
+    console.log("REQUEST ARRIVED");
+    console.log(req.body);
     const result = await processAlert(req.body);
     return res.status(200).json(result);
   } catch (err) {
@@ -19,12 +21,12 @@ const getAllAlerts = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
-    const alerts = await Alert.find()
+    const alerts = await Alert.find({ isResolved: false })
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
 
-    const total = await Alert.countDocuments();
+    const total = await Alert.countDocuments({ isResolved: false });
 
     return res.status(200).json({
       alerts,
@@ -37,7 +39,6 @@ const getAllAlerts = async (req, res) => {
     return res.status(500).json({ message: err.message });
   }
 };
-
 // =========================
 // GET ALERTS BY WORKER
 // =========================

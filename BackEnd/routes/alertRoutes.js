@@ -3,11 +3,23 @@ const router = express.Router();
 const { protect, authorizeRoles } = require("../middleware/authMiddleware");
 
 const {
+  checkAndCreateAlert,
   getAllAlerts,
   getAlertsByWorker,
   resolveAlert
 } = require("../controllers/alertController");
 
+// =========================
+// CREATE ALERT (ESP32)
+// =========================
+router.post(
+  "/",
+  checkAndCreateAlert
+);
+
+// =========================
+// GET ALL ALERTS
+// =========================
 router.get(
   "/",
   protect,
@@ -15,6 +27,9 @@ router.get(
   getAllAlerts
 );
 
+// =========================
+// RESOLVE ALERT
+// =========================
 router.patch(
   "/:id/resolve",
   protect,
@@ -22,6 +37,9 @@ router.patch(
   resolveAlert
 );
 
+// =========================
+// GET ALERTS BY WORKER
+// =========================
 router.get(
   "/worker/:workerID",
   protect,
