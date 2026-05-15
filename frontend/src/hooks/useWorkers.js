@@ -1,34 +1,38 @@
 import { useCallback, useEffect, useState } from "react";
 import { apiClient } from "../lib/apiClient";
 
-export function useWorkers() {
+export function useWorkers(all = false) {
   const [workers, setWorkers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const [totalWorkers, setTotalWorkers] = useState(0);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
   const loadWorkers = useCallback(async (newPage = 1) => {
-    setLoading(true);
-    setError("");
+  setLoading(true);
+  setError("");
 
-    try {
-      const res = await apiClient.get(
-        `/api/workers?page=${newPage}&limit=10`
-      );
+  try {
+    const url = all
+      ? `/api/workers?limit=10000`
+      : `/api/workers?page=${newPage}&limit=10`;
 
-      const data = res?.data || res;
+    const res = await apiClient.get(url);
 
-      setWorkers(data?.workers || []);
-      setPage(data?.page || 1);
-      setTotalPages(data?.totalPages || 1);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    const data = res?.data || res;
+
+    setWorkers(data?.workers || []);
+    setPage(data?.page || 1);
+    setTotalPages(data?.totalPages || 1);
+    setTotalWorkers(data?.totalWorkers || 0);
+  } catch (err) {
+    setError(err.message);
+  } finally {
+    setLoading(false);
+  }
+}, [all]);
 
   useEffect(() => {
     loadWorkers(1);
@@ -55,6 +59,7 @@ export function useWorkers() {
 
   return {
   workers,
+  totalWorkers,
   loading,
   error,
   page,

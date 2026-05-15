@@ -28,7 +28,7 @@ function makeInitialForm(factoryId = "") {
 export default function WorkersPage() {
   const { user } = useAuth();
   const { factories, loading: factoriesLoading, error: factoriesError } = useFactories();
-  const {workers,loading,error,page,totalPages,goNext,goPrev,addWorker,deleteWorker} = useWorkers();
+  const {workers,totalWorkers,loading,error,page,totalPages,goNext,goPrev,addWorker,deleteWorker} = useWorkers();
   const { openModal } = useModal();
 
   const [form, setForm] = useState(() => makeInitialForm(""));
@@ -111,10 +111,11 @@ export default function WorkersPage() {
     <div className="grid" style={{ position: "relative" }}>
       <h2 className="page-title">👷 Workers</h2>
       {/* عرض عدد العمال */}
+      {totalWorkers !== undefined && (
       <div className="users-counter" style={{ margin: "1px 0", fontWeight: "bold" }}>
-        Total Workers: {workers.length}
+        Total Workers: {totalWorkers}
         </div>
-      
+      )}
         {loading ? <p>Loading workers...</p> : null}
         {error ? <p>{error}</p> : null}
         <table className="table workers-table">

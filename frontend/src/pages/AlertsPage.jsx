@@ -4,7 +4,7 @@ import { apiClient } from "../lib/apiClient";
 import "../styles/alerts.css";
 
 export default function AlertsPage() {
-  const {alerts,setAlerts,loading,error,totalAlerts,page,totalPages,goNext,goPrev,loadAlerts} = useAlerts(10000);
+  const {alerts,setAlerts,loading,error,totalAlerts,page,totalPages,goNext,goPrev,loadAlerts} = useAlerts(0, false, "paged")
   const handleResolve = async (id) => {
   try {
     await apiClient.patch(`/api/alerts/${id}/resolve`);

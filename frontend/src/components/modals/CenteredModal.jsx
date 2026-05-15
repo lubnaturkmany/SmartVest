@@ -10,7 +10,7 @@ export default function CenteredModal({
 }) {
   return (
     <div className="modal-backdrop">
-      <div className={`modal ${type}`}>
+      <div className={`modal ${type === "acknowledge" ? "info" : type}`}>
         
         <h3 className="modal-title">{title}</h3>
 
@@ -19,23 +19,25 @@ export default function CenteredModal({
         ) : null}
 
         <div className="modal-actions">
-          {!hideCancel ? (
-            <button
-              type="button"
-              className="ghost"
-              onClick={onCancel}
-            >
-              {cancelText}
-            </button>
-          ) : null}
+         {type === "danger" || type === "warning" ? null : (
+  <button
+    type="button"
+    className="ghost"
+    onClick={onCancel}
+  >
+    {cancelText}
+  </button>
+)}
 
           <button
-            type="button"
-            className="modal-confirm"
-            onClick={onConfirm}
+          type="button"
+          className="modal-confirm"
+          onClick={onConfirm}
           >
-            {confirmText}
-          </button>
+              {type === "danger" || type === "warning"
+    ? "Acknowledge"
+    : confirmText}
+            </button>
         </div>
       </div>
     </div>

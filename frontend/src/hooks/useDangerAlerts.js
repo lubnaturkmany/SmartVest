@@ -1,12 +1,12 @@
 import { useEffect, useRef } from "react";
 import { useModal } from "./useModal";
 
-export function useDangerAlerts(alerts, enabled = true) {
+export function useDangerAlerts(alerts, enabled = true, showPopup = true) {
   const { openModal } = useModal();
   const seen = useRef(new Set());
 
   useEffect(() => {
-    if (!enabled || !alerts?.length) return;
+    if (!enabled || !alerts?.length || !showPopup) return;
 
     // نرتب حسب الأولوية: Danger أولاً
     const sorted = [...alerts].sort((a, b) => {

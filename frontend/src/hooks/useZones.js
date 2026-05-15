@@ -13,6 +13,7 @@ export function useZones() {
 
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalZones, setTotalZones] = useState(0);
 
   // =========================
   // LOAD ZONES (pagination)
@@ -42,6 +43,7 @@ export function useZones() {
         setZones(data?.zones || []);
         setPage(data?.page || 1);
         setTotalPages(data?.totalPages || 1);
+        setTotalZones(data?.totalZones || 0);
       } catch (err) {
         setError(err.message);
         openModal({
@@ -119,6 +121,7 @@ export function useZones() {
 
   return {
     zones,
+    totalZones, 
     loading,
     error,
     page,

@@ -2,11 +2,17 @@ import { useMemo } from "react";
 import WorkerStatusChart from "../components/charts/WorkerStatusChart";
 import { useWorkers } from "../hooks/useWorkers";
 import { useAlerts } from "../hooks/useAlerts";
+import { useLocation } from "react-router-dom";
+import { useDangerAlerts } from "../hooks/useDangerAlerts";
 import "../styles/dashboard.css";
 
 export default function DashboardPage() {
-  const { workers } = useWorkers();
-  const { alerts } = useAlerts();
+  const { workers = [], totalWorkers = 0 } = useWorkers();
+  const { alerts } = useAlerts(10000, false, "all");
+  const location = useLocation();
+  const isDashboard = location.pathname.startsWith("/dashboard");
+
+useDangerAlerts(alerts, isDashboard);
 
   const statusData = useMemo(() => {
     const dangerWorkerIDs = new Set(
@@ -104,7 +110,7 @@ const flame = alerts.filter(
 
           <div className="card stat-card stat-card-center card-workers">
             <h4>👷 Total Workers</h4>
-            <p>{workers.length}</p>
+            <p>{totalWorkers}</p>
           </div>
 
           <div className="card stat-card stat-card-center card-alerts">

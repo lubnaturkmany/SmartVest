@@ -8,7 +8,7 @@ import "../styles/zones.css";
 
 export default function ZonesPage() {
   const { user } = useAuth();
-  const {zones,loading,error,page,totalPages,loadZones,addZone,deleteZone,goNext,goPrev} = useZones();
+  const {zones,totalZones,loading,error,page,totalPages,loadZones,addZone,deleteZone,goNext,goPrev} = useZones();
   const { openModal } = useModal();
 
   const [showPanel, setShowPanel] = useState(false);
@@ -82,10 +82,11 @@ useEffect(() => {
     <div className="grid" style={{ position: "relative" }}>
       <h2 className="page-title">🟣 Zones</h2>
       {/* بطاقة Total Zones */}
+      {totalZones !== undefined && (
       <div className="users-counter" style={{ margin: "1px 0", fontWeight: "bold" }}>
-        Total Zones: {zones.length}
+        Total Zones: {totalZones}
         </div>
-
+      )}
         {loading ? <p>Loading zones…</p> : null}
         {error ? <p>{error}</p> : null}
         <table className="table table--zones">

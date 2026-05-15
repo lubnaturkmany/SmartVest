@@ -2,7 +2,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { apiClient } from "../lib/apiClient";
 import { useModal } from "./useModal";
  
-export function useAlerts(pollMs = 0) {
+
+export function useAlerts(pollMs = 0, enablePopup = true, mode = "paged") {
   const [alerts, setAlerts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -25,24 +26,14 @@ export function useAlerts(pollMs = 0) {
  
     try {
       const res = await apiClient.get(
-        `/api/alerts?page=${newPage}&limit=10`
-      );
- 
+        mode === "all"
+    ? `/api/alerts?limit=10000`
+    :`/api/alerts?page=${newPage}&limit=10`
+);
+
       const data = res?.data || res; // 🔥 دعم axios أو fetch wrapper
  
-      setAlerts((prev) => {
-        const serverAlerts = data?.alerts || [];
- 
-        const map = new Map();
- 
-        // local state
-        prev.forEach((a) => map.set(a._id, a));
- 
-        // server state (override)
-        serverAlerts.forEach((a) => map.set(a._id, a));
- 
-        return Array.from(map.values());
-      });
+      setAlerts(data?.alerts || []);
  
       setPage(data?.page || 1);
       setTotalPages(data?.totalPages || 1);
@@ -53,7 +44,8 @@ export function useAlerts(pollMs = 0) {
     } finally {
       setLoading(false);
     }
-  }, []);
+  },
+   []);
  
   // =========================
   // INITIAL LOAD
@@ -100,27 +92,29 @@ export function useAlerts(pollMs = 0) {
   // MODAL LOGIC (no flicker)
   // =========================
   useEffect(() => {
-    if (!alerts.length) return;
- 
-    const latestAlert = alerts[0];
- 
-    if (
-      (latestAlert?.type === "Danger" || latestAlert?.type === "Warning") &&
-      latestAlert._id !== lastAlertId.current
-    ) {
-      lastAlertId.current = latestAlert._id;
- 
-      if (!shownAlerts.current.has(latestAlert._id)) {
-        shownAlerts.current.add(latestAlert._id);
- 
-        openModal({
-          title: `${latestAlert.type} Alert`,
-          message: latestAlert.message,
-          type: latestAlert.type?.toLowerCase(),
-        });
-      }
+  if (!enablePopup) return;   // 👈 أهم سطر
+
+  if (!alerts.length) return;
+
+  const latestAlert = alerts[0];
+
+  if (
+    (latestAlert?.type === "Danger" || latestAlert?.type === "Warning") &&
+    latestAlert._id !== lastAlertId.current
+  ) {
+    lastAlertId.current = latestAlert._id;
+
+    if (!shownAlerts.current.has(latestAlert._id)) {
+      shownAlerts.current.add(latestAlert._id);
+
+      openModal({
+        title: `${latestAlert.type} Alert`,
+        message: latestAlert.message,
+        type: latestAlert.type?.toLowerCase(),
+      });
     }
-  }, [alerts, openModal]);
+  }
+}, [alerts, openModal, enablePopup]);
  
   // =========================
   // PAGINATION
